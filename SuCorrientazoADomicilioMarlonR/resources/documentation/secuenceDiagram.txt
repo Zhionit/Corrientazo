@@ -1,0 +1,28 @@
+title Secuencia de pedidos para drones Tu Corrientazo
+
+participant Gestor de Archivos
+participant Planeador de rutas
+participant Coordinador de drone
+participant Drone
+
+Gestor de Archivos->Gestor de Archivos: Leer y comprobar estado del archivo.
+activate Gestor de Archivos
+note over Gestor de Archivos: Este proceso se realiza por cada archivo,\n entendiendo que cada uno es un drone
+Gestor de Archivos-> Planeador de rutas: Envío de las instrucciones de cada archivo\n con el nombre del archivo
+Planeador de rutas ->Planeador de rutas: Extraer y detectar el drones a usar
+Planeador de rutas->Planeador de rutas: Comprobar estado del drone
+Planeador de rutas ->Planeador de rutas: Calcular cantidad de pedidos por cada drone
+Planeador de rutas->Planeador de rutas: Calcular ruta del dron incluyendo direcciones, \nresaltando cada coordenada final de cada pedido
+Planeador de rutas->Coordinador de drone: Enviar la ruta del drone incluyendo direcciones,\n pedidos y coordenadas finales de cada pedidos
+Coordinador de drone ->Drone: Sincronización con el drone, verificar su estado,\n revisar pedidos y coordenadas
+Drone -->Coordinador de drone: Respuesta con ubicación actual y estado de pedidos
+Coordinador de drone->Coordinador de drone: Coordinar los movimientos del drone,\n indicando coordenadas de pedido
+activate Coordinador de drone
+note over Coordinador de drone:Este proceso se realiza por cada pedido
+Coordinador de drone -> Drone: Indicación de movimiento dada una dirección y\n entregua paquete de ser requerido
+Drone ->Drone: Moverse en la dirección deseada\n y entregar paquete de ser requerido
+Drone --> Coordinador de drone: Respuesta con ubicación actual y estado de pedidos
+deactivate Coordinador de drone
+Coordinador de drone -->Planeador de rutas: Respuesta con estado final de la ruta y\n los pedidos del drone
+Planeador de rutas -->Gestor de Archivos: Respuesta de la ruta generada a partir de \nlas intrucciones, incluyendo el dron usado
+Gestor de Archivos ->Gestor de Archivos: Generar un archivo con el nombre del drone,\n incluyendo las ubicaciones \ny direcciones finales de cada pedido
