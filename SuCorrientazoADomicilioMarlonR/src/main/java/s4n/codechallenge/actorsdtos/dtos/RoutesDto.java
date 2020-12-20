@@ -11,6 +11,6 @@ import lombok.Setter;
 @Builder
 public class RoutesDto {
     private byte id;
-    private DroneDto droneDto;
+    private SyncDroneDto syncDroneDto;
     private OrderAndCoordinateDto orderAndCoordinateDto;
 }

@@ -1,11 +1,11 @@
 package s4n.codechallenge.actorsdtos.dtos;
 
 import lombok.AllArgsConstructor;
-import lombok.Generated;
-import lombok.Setter;
-import lombok.Getter;
 import lombok.Builder;
-
+import lombok.Generated;
+import lombok.Getter;
+import lombok.Setter;
+import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
 import s4n.codechallenge.entities.DroneInformation;
 
 @Generated
@@ -13,7 +13,7 @@ import s4n.codechallenge.entities.DroneInformation;
 @Getter
 @Builder
 @AllArgsConstructor
-public class DroneDto {
+public class MoveDroneDto implements DroneManagerDtoCmd {
     private byte id;
     private DroneInformationDto droneInformation;
 
@@ -21,7 +21,7 @@ public class DroneDto {
         return DroneInformationDto.builder()
                 .cardinalDirection(droneInformation.getCardinalDirection())
                 .cartesianCoordinate(CartesianCoordinateDto.toDto(droneInformation.getCartesianCoordinate()))
-                .orders(OrderDto.toDtos(droneInformation.getOrders()))
+                .actualOrderDto(OrderDto.toDto(droneInformation.getOrder()))
                 .build();
     }
 }

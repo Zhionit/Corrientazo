@@ -17,7 +17,7 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor
-public class DroneCmd implements DroneActuatorDtoCmd {
+public class DroneActuatorCmd implements DroneActuatorDtoCmd {
     private byte id;
     private List<Order> orders;
     private ActorRef<DroneManagerDtoCmd> replyTo;

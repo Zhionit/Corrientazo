@@ -6,11 +6,10 @@ import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 import s4n.codechallenge.entities.DroneInformation;
+import s4n.codechallenge.entities.Order;
 import s4n.codechallenge.enums.CardinalDirection;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Generated
 @Getter
@@ -19,19 +18,19 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class DroneInformationDto {
 
-    private List<OrderDto> orders;
+    private OrderDto actualOrderDto;
     private CardinalDirection cardinalDirection;
     private CartesianCoordinateDto cartesianCoordinate;
 
     public DroneInformationDto() {
         this.cardinalDirection = CardinalDirection.NORTE;
         this.cartesianCoordinate = new CartesianCoordinateDto();
-        this.orders = new ArrayList<>();
+        this.actualOrderDto = new OrderDto(new CartesianCoordinateDto());
     }
 
     public static DroneInformationDto toDto(DroneInformation droneInformation) {
         return DroneInformationDto.builder()
-                .orders(OrderDto.toDtos(droneInformation.getOrders()))
+                .actualOrderDto(OrderDto.toDto(droneInformation.getOrder()))
                 .cardinalDirection(droneInformation.getCardinalDirection())
                 .cartesianCoordinate(CartesianCoordinateDto.toDto(droneInformation.getCartesianCoordinate()))
                 .build();
