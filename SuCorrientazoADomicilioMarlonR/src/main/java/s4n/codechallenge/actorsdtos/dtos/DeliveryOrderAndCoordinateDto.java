@@ -9,6 +9,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class OrderAndCoordinateDto {
+public class DeliveryOrderAndCoordinateDto {
     private CartesianCoordinateDto cartesianCoordinateDto;
 }

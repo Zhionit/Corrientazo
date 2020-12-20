@@ -20,8 +20,8 @@ public class MoveDroneDto implements DroneManagerDtoCmd {
     public static DroneInformationDto toDto(DroneInformation droneInformation) {
         return DroneInformationDto.builder()
                 .cardinalDirection(droneInformation.getCardinalDirection())
-                .cartesianCoordinate(CartesianCoordinateDto.toDto(droneInformation.getCartesianCoordinate()))
-                .actualOrderDto(OrderDto.toDto(droneInformation.getOrder()))
+                .cartesianCoordinateDto(CartesianCoordinateDto.toDto(droneInformation.getCartesianCoordinate()))
+                .actualDeliveryOrderDto(DeliveryOrderDto.toDto(droneInformation.getDeliveryOrder()))
                 .build();
     }
 }

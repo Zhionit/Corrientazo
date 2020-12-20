@@ -4,19 +4,19 @@ import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
-import s4n.codechallenge.enums.OrderStatus;
+import s4n.codechallenge.enums.DeliveryOrderStatus;
 
 @Generated
 @Setter
 @Getter
 @Builder
-public class Order {
+public class DeliveryOrder {
     private byte id;
-    private OrderStatus orderStatus;
+    private DeliveryOrderStatus deliveryOrderStatus;
     private CartesianCoordinate cartesianCoordinateOfDestination;
 
-    public Order(CartesianCoordinate cartesianCoordinateOfDestination) {
-        this.orderStatus = OrderStatus.UNDELIVERED;
+    public DeliveryOrder(CartesianCoordinate cartesianCoordinateOfDestination) {
+        this.deliveryOrderStatus = DeliveryOrderStatus.UNDELIVERED;
         this.cartesianCoordinateOfDestination = cartesianCoordinateOfDestination;
     }
 }

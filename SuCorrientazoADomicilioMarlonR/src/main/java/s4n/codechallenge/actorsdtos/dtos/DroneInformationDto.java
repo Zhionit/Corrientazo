@@ -6,10 +6,7 @@ import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 import s4n.codechallenge.entities.DroneInformation;
-import s4n.codechallenge.entities.Order;
 import s4n.codechallenge.enums.CardinalDirection;
-
-import java.util.ArrayList;
 
 @Generated
 @Getter
@@ -18,21 +15,21 @@ import java.util.ArrayList;
 @AllArgsConstructor
 public class DroneInformationDto {
 
-    private OrderDto actualOrderDto;
+    private DeliveryOrderDto actualDeliveryOrderDto;
     private CardinalDirection cardinalDirection;
-    private CartesianCoordinateDto cartesianCoordinate;
+    private CartesianCoordinateDto cartesianCoordinateDto;
 
     public DroneInformationDto() {
         this.cardinalDirection = CardinalDirection.NORTE;
-        this.cartesianCoordinate = new CartesianCoordinateDto();
-        this.actualOrderDto = new OrderDto(new CartesianCoordinateDto());
+        this.cartesianCoordinateDto = new CartesianCoordinateDto();
+        this.actualDeliveryOrderDto = new DeliveryOrderDto(new CartesianCoordinateDto());
     }
 
     public static DroneInformationDto toDto(DroneInformation droneInformation) {
         return DroneInformationDto.builder()
-                .actualOrderDto(OrderDto.toDto(droneInformation.getOrder()))
+                .actualDeliveryOrderDto(DeliveryOrderDto.toDto(droneInformation.getDeliveryOrder()))
                 .cardinalDirection(droneInformation.getCardinalDirection())
-                .cartesianCoordinate(CartesianCoordinateDto.toDto(droneInformation.getCartesianCoordinate()))
+                .cartesianCoordinateDto(CartesianCoordinateDto.toDto(droneInformation.getCartesianCoordinate()))
                 .build();
     }
 }

@@ -12,5 +12,5 @@ import lombok.Setter;
 public class RoutesDto {
     private byte id;
     private SyncDroneDto syncDroneDto;
-    private OrderAndCoordinateDto orderAndCoordinateDto;
+    private DeliveryOrderAndCoordinateDto deliveryOrderAndCoordinateDto;
 }

@@ -7,7 +7,7 @@ import lombok.Getter;
 @Generated
 @Getter
 @AllArgsConstructor
-public enum OrderStatus {
+public enum DeliveryOrderStatus {
     DELIVERED("Delivered"), UNDELIVERED("No entregado");
 
     String value;

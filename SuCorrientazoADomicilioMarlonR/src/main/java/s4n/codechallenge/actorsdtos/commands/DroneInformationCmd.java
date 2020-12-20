@@ -1,39 +1,35 @@
 package s4n.codechallenge.actorsdtos.commands;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
-import s4n.codechallenge.actorsdtos.dtos.CartesianCoordinateDto;
-import s4n.codechallenge.actorsdtos.dtos.OrderDto;
-import s4n.codechallenge.entities.CartesianCoordinate;
 import s4n.codechallenge.entities.DroneInformation;
 import s4n.codechallenge.enums.CardinalDirection;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Generated
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 public class DroneInformationCmd {
-    private List<OrderDto> orders;
+    private NewActualDeliveryOrderCmd actualNewActualDeliveryOrderCmd;
     private CardinalDirection cardinalDirection;
-    private CartesianCoordinateDto cartesianCoordinate;
+    private CartesianCoordinateCmd cartesianCoordinateCmd;
 
     public DroneInformationCmd() {
         this.cardinalDirection = CardinalDirection.NORTE;
-        this.cartesianCoordinate = new CartesianCoordinateDto();
-        this.orders = new ArrayList<>();
+        this.cartesianCoordinateCmd = new CartesianCoordinateCmd();
+        this.actualNewActualDeliveryOrderCmd = new NewActualDeliveryOrderCmd();
     }
 
-    public static DroneInformation toModel(DroneInformationCmd droneInformationCmd) {
-        return DroneInformation.builder()
-                .cardinalDirection(droneInformationCmd.getCardinalDirection())
-                .cartesianCoordinate(CartesianCoordinate.toModel(droneInformationCmd.getCartesianCoordinate()))
-                .orders(OrderCmd.toModels(droneInformationCmd.getOrders()))
+    public static DroneInformationCmd toModel(DroneInformation droneInformation) {
+        return DroneInformationCmd.builder()
+                .cardinalDirection(droneInformation.getCardinalDirection())
+                .cartesianCoordinateCmd(CartesianCoordinateCmd.toCmd(droneInformation.getCartesianCoordinate()))
+                .actualNewActualDeliveryOrderCmd(NewActualDeliveryOrderCmd.toCmd(droneInformation.getDeliveryOrder()))
                 .build();
     }
 }

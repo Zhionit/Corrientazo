@@ -12,12 +12,22 @@ import lombok.Getter;
 import lombok.Setter;
 import s4n.codechallenge.actorsdtos.DroneActuatorDtoCmd;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
+import s4n.codechallenge.actorsdtos.commands.CartesianCoordinateCmd;
+import s4n.codechallenge.actorsdtos.commands.DroneInformationCmd;
 import s4n.codechallenge.actorsdtos.commands.DroneManagerCmd;
+import s4n.codechallenge.actorsdtos.commands.MoveDroneCmd;
+import s4n.codechallenge.actorsdtos.commands.NewActualDeliveryOrderCmd;
+import s4n.codechallenge.actorsdtos.dtos.CartesianCoordinateDto;
 import s4n.codechallenge.actorsdtos.dtos.MoveDroneDto;
-import s4n.codechallenge.actorsdtos.dtos.OrderDto;
+import s4n.codechallenge.actorsdtos.dtos.DeliveryOrderDto;
 import s4n.codechallenge.actorsdtos.dtos.SyncDroneDto;
-import s4n.codechallenge.entities.Order;
+import s4n.codechallenge.entities.CartesianCoordinate;
+import s4n.codechallenge.entities.DeliveryOrder;
+import s4n.codechallenge.entities.DroneInformation;
 import s4n.codechallenge.entities.Route;
+import s4n.codechallenge.entities.RouteCoordinates;
+import s4n.codechallenge.enums.DroneStatus;
+import s4n.codechallenge.enums.DeliveryOrderStatus;
 import s4n.codechallenge.services.DroneManager;
 
 import java.util.List;
@@ -29,9 +39,11 @@ import java.util.Optional;
 public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> implements DroneManager {
     private List<Route> routes;
     private ActorRef<DroneActuatorDtoCmd> droneActuatorActorRef;
+    private DroneInformationCmd droneInformationCmd;
 
     public DroneManagerImpl(ActorContext<DroneManagerDtoCmd> context) {
         super(context);
+        this.droneInformationCmd = new DroneInformationCmd();
         droneActuatorActorRef = context.spawn(DroneActuatorImpl.create(), "droneActuator");
     }
 
@@ -50,7 +62,21 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
     }
 
     @Override
-    public DroneManagerDtoCmd moveDrone(MoveDroneDto droneManagerDtoCmd) {
+    public void moveDrone() {
+
+        DroneInformationCmd nextDroneInformationDto = DroneInformationCmd.builder()
+                .cartesianCoordinateCmd(CartesianCoordinateCmd.toCmd(nextCoordinates))
+                .actualNewActualDeliveryOrderCmd(NewActualDeliveryOrderCmd.toCmd(actualOrder))
+                .cardinalDirection(.getCardinalDirection())
+                                    .build();
+
+        MoveDroneCmd moveDroneCmd = MoveDroneCmd.builder()
+                .droneId(syncDroneDto.getId())
+                .droneInformationDto(nextDroneInformationDto)
+                .shouldDeliverOrder(Boolean.TRUE)
+                .build();
+
+        droneActuatorActorRef.tell();
         return null;
     }
 
@@ -86,19 +112,47 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
 
     private void coordinateDroneMovements(SyncDroneDto syncDroneDto) {
         Optional<Route> routeOptional = findRouteCoordinatesByDroneId(syncDroneDto.getId());
+
         routeOptional.ifPresent(route -> {
-            OrderDto actualOrderDto = syncDroneDto.getDroneInformation().getActualOrderDto();
 
-            Optional<Order> orderOptional = findOrderInRouteById(actualOrderDto.getId(), route);
-            orderOptional.ifPresent(order -> {
-                
-            });
+            DeliveryOrderDto actualDeliveryOrderDto = syncDroneDto.getDroneInformation().getActualDeliveryOrderDto();
+            if (actualDeliveryOrderDto.getDeliveryOrderStatus().equals(DeliveryOrderStatus.UNDELIVERED)) {
 
+                Optional<DeliveryOrder> deliveryOrderOptional = findOrderInRouteById(actualDeliveryOrderDto.getId(), route);
+                deliveryOrderOptional.ifPresent(actualDeliveryOrder -> {
+                    CartesianCoordinate deliverCoordinate = actualDeliveryOrder.getCartesianCoordinateOfDestination();
+                    Optional<RouteCoordinates> actualCoordinateInRout =
+                            findActualCoordinateInRoute(syncDroneDto.getDroneInformation().getCartesianCoordinateDto(), route.getRouteCoordinates());
+
+                    actualCoordinateInRout.ifPresent(routeCoordinates -> {
+                        CartesianCoordinate nextCoordinates = routeCoordinates.getNext();
+                        if (nextCoordinates.equals(deliverCoordinate)) {
+                            DroneInformation newActualDroneInformation = DroneInformation.builder()
+                                    .droneStatus(DroneStatus.BUSY)
+                                    .cardinalDirection(droneInformationCmd.getCardinalDirection())
+                                    .deliveryOrder(droneInformationCmd.getActualNewActualDeliveryOrderCmd())
+                                    .build();
+
+                            moveDrone();
+                        }
+                    });
+                });
+
+            }
+
+            DeliveryOrder newActualDeliveryOrder = getNextOrder(actualDeliveryOrderDto, route.getDeliveryOrders());
         });
     }
 
-    private Optional<Order> findOrderInRouteById(byte orderId, Route route) {
-        return route.getOrders()
+    private Optional<RouteCoordinates> findActualCoordinateInRoute(CartesianCoordinateDto actualDroneCoordinateDto,
+                                                                   List<RouteCoordinates> routeCoordinates) {
+        return routeCoordinates.stream().filter(routeCoordinate -> routeCoordinate.getActual()
+                .equals(actualDroneCoordinateDto))
+                .findFirst();
+    }
+
+    private Optional<DeliveryOrder> findOrderInRouteById(byte orderId, Route route) {
+        return route.getDeliveryOrders()
                 .stream()
                 .filter(order -> order.getId() == orderId)
                 .findFirst();

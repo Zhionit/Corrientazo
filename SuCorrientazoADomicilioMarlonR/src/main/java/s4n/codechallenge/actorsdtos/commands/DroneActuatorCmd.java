@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import s4n.codechallenge.actorsdtos.DroneActuatorDtoCmd;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
-import s4n.codechallenge.entities.Order;
+import s4n.codechallenge.entities.DeliveryOrder;
 
 import java.util.List;
 
@@ -19,6 +19,6 @@ import java.util.List;
 @AllArgsConstructor
 public class DroneActuatorCmd implements DroneActuatorDtoCmd {
     private byte id;
-    private List<Order> orders;
+    private List<DeliveryOrder> deliveryOrders;
     private ActorRef<DroneManagerDtoCmd> replyTo;
 }

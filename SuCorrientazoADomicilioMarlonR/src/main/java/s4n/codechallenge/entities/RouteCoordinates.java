@@ -12,6 +12,7 @@ import lombok.Setter;
 @Builder
 @RequiredArgsConstructor
 public class RouteCoordinates {
-    private CartesianCoordinate from;
-    private CartesianCoordinate to;
+    private final CartesianCoordinate before;
+    private final CartesianCoordinate actual;
+    private final CartesianCoordinate next;
 }

@@ -16,7 +16,7 @@ import s4n.codechallenge.enums.DroneStatus;
 public class DroneInformation {
 
     private DroneStatus droneStatus;
-    private Order order;
+    private DeliveryOrder deliveryOrder;
     private CardinalDirection cardinalDirection;
     private CartesianCoordinate cartesianCoordinate;
 
@@ -24,6 +24,6 @@ public class DroneInformation {
         this.droneStatus = s4n.codechallenge.enums.DroneStatus.AVAILABLE;
         this.cardinalDirection = CardinalDirection.NORTE;
         this.cartesianCoordinate = new CartesianCoordinate();
-        this.order = new Order(new CartesianCoordinate());
+        this.deliveryOrder = new DeliveryOrder(new CartesianCoordinate());
     }
 }

@@ -62,10 +62,10 @@ public class DroneActuatorImpl extends AbstractBehavior<DroneActuatorDtoCmd> imp
     }
 
     private Behavior<DroneActuatorDtoCmd> moveDrone(MoveDroneCmd moveDroneCmd) {
-        getContext().getLog().info("Moving {} drone", moveDroneCmd.getId());
+        getContext().getLog().info("Moving {} drone", moveDroneCmd.getDroneId());
         //TODO - Add cache if enough time, else simulate db connection with fake data
 
-        Optional<Drone> droneOptional = findDrone(moveDroneCmd.getId());
+        Optional<Drone> droneOptional = findDrone(moveDroneCmd.getDroneId());
         droneOptional.ifPresent(drone -> {
             DroneInformation droneInformation = DroneInformationCmd.toModel(moveDroneCmd.getDroneInformationDto());
             droneInformation.setDroneStatus(DroneStatus.BUSY);
