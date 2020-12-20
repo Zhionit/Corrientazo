@@ -1,4 +1,4 @@
-package s4n.codechallenge.actorsdtos.dtos;
+package s4n.codechallenge.actorsdtos.communication;
 
 import lombok.AllArgsConstructor;
 import lombok.Generated;
@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Builder;
 
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
+import s4n.codechallenge.actorsdtos.dtos.DroneInformationDto;
 import s4n.codechallenge.entities.Drone;
 
 @Generated
@@ -14,12 +15,12 @@ import s4n.codechallenge.entities.Drone;
 @Getter
 @Builder
 @AllArgsConstructor
-public class SyncDroneDto implements DroneManagerDtoCmd {
+public class DroneActuatorToDroneManagerSyncDroneDto implements DroneManagerDtoCmd {
     private byte id;
     private DroneInformationDto droneInformation;
 
-    public static SyncDroneDto toDto(Drone drone) {
-        return SyncDroneDto.builder()
+    public static DroneActuatorToDroneManagerSyncDroneDto toDto(Drone drone) {
+        return DroneActuatorToDroneManagerSyncDroneDto.builder()
                 .id(drone.getId())
                 .droneInformation(DroneInformationDto.toDto(drone.getDroneInformation()))
                 .build();

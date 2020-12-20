@@ -6,13 +6,15 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.util.Optional;
+
 @Generated
 @Getter
 @Setter
 @Builder
 @RequiredArgsConstructor
 public class RouteCoordinates {
-    private final CartesianCoordinate before;
-    private final CartesianCoordinate actual;
-    private final CartesianCoordinate next;
+    private final Optional<CartesianCoordinate> beforeOptional;
+    private final Optional<CartesianCoordinate> actualOptional;
+    private final Optional<CartesianCoordinate> nextOptional;
 }

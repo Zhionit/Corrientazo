@@ -27,7 +27,7 @@ public class DroneInformationDto {
 
     public static DroneInformationDto toDto(DroneInformation droneInformation) {
         return DroneInformationDto.builder()
-                .actualDeliveryOrderDto(DeliveryOrderDto.toDto(droneInformation.getDeliveryOrder()))
+                .actualDeliveryOrderDto(droneInformation.getDeliveryOrder().isPresent() ? DeliveryOrderDto.toDto(droneInformation.getDeliveryOrder().get()) : null)
                 .cardinalDirection(droneInformation.getCardinalDirection())
                 .cartesianCoordinateDto(CartesianCoordinateDto.toDto(droneInformation.getCartesianCoordinate()))
                 .build();

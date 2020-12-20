@@ -26,6 +26,13 @@ public class CartesianCoordinateCmd {
                 .build();
     }
 
+    public static CartesianCoordinate toModel(CartesianCoordinateCmd cartesianCoordinateCmd) {
+        return CartesianCoordinate.builder()
+                .xAxe(cartesianCoordinateCmd.getXAxe())
+                .yAxe(cartesianCoordinateCmd.getYAxe())
+                .build();
+    }
+
     @Override
     public String toString() {
         return "(" + xAxe + ", " + yAxe +')';

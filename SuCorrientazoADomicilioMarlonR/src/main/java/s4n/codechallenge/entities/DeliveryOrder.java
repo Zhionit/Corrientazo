@@ -14,6 +14,7 @@ public class DeliveryOrder {
     private byte id;
     private DeliveryOrderStatus deliveryOrderStatus;
     private CartesianCoordinate cartesianCoordinateOfDestination;
+    private DeliveryOrder nextDeliveryOrder;
 
     public DeliveryOrder(CartesianCoordinate cartesianCoordinateOfDestination) {
         this.deliveryOrderStatus = DeliveryOrderStatus.UNDELIVERED;

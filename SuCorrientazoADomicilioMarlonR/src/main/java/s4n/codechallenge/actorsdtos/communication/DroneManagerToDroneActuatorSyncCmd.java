@@ -1,4 +1,4 @@
-package s4n.codechallenge.actorsdtos.commands;
+package s4n.codechallenge.actorsdtos.communication;
 
 import akka.actor.typed.ActorRef;
 import lombok.AllArgsConstructor;
@@ -17,8 +17,8 @@ import java.util.List;
 @Getter
 @Builder
 @AllArgsConstructor
-public class DroneActuatorCmd implements DroneActuatorDtoCmd {
-    private byte id;
+public class DroneManagerToDroneActuatorSyncCmd implements DroneActuatorDtoCmd {
+    private byte droneId;
     private List<DeliveryOrder> deliveryOrders;
     private ActorRef<DroneManagerDtoCmd> replyTo;
 }

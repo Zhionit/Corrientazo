@@ -1,11 +1,12 @@
 package s4n.codechallenge.services;
 
-import s4n.codechallenge.actorsdtos.dtos.SyncDroneDto;
+import s4n.codechallenge.actorsdtos.communication.DroneActuatorToDroneManagerSyncDroneDto;
+import s4n.codechallenge.entities.DroneInformation;
 
 public interface DroneManager {
-    void droneSync(SyncDroneDto droneManagerDtoCmd);
+    void droneSync(DroneActuatorToDroneManagerSyncDroneDto droneManagerDtoCmd);
 
     void deliverOrders();
 
-    void moveDrone();
+    void moveDroneInDroneActuator(DroneInformation newActualDroneInformation);
 }

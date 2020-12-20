@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
+import s4n.codechallenge.actorsdtos.communication.DroneActuatorToDroneManagerSyncDroneDto;
 
 @Generated
 @Getter
@@ -11,6 +12,6 @@ import lombok.Setter;
 @Builder
 public class RoutesDto {
     private byte id;
-    private SyncDroneDto syncDroneDto;
+    private DroneActuatorToDroneManagerSyncDroneDto droneActuatorToDroneManagerSyncDroneDto;
     private DeliveryOrderAndCoordinateDto deliveryOrderAndCoordinateDto;
 }

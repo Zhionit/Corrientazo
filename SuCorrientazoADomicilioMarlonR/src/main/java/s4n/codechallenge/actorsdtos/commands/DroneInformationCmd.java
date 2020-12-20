@@ -8,6 +8,7 @@ import lombok.Setter;
 import s4n.codechallenge.entities.DroneInformation;
 import s4n.codechallenge.enums.CardinalDirection;
 
+import java.util.Optional;
 
 @Generated
 @Getter
@@ -15,21 +16,23 @@ import s4n.codechallenge.enums.CardinalDirection;
 @Builder
 @AllArgsConstructor
 public class DroneInformationCmd {
-    private NewActualDeliveryOrderCmd actualNewActualDeliveryOrderCmd;
+    private byte droneId;
+    private Optional<NewDeliveryOrderCmd> newDeliveryOrderCmd;
     private CardinalDirection cardinalDirection;
     private CartesianCoordinateCmd cartesianCoordinateCmd;
 
     public DroneInformationCmd() {
         this.cardinalDirection = CardinalDirection.NORTE;
         this.cartesianCoordinateCmd = new CartesianCoordinateCmd();
-        this.actualNewActualDeliveryOrderCmd = new NewActualDeliveryOrderCmd();
+        this.newDeliveryOrderCmd = Optional.of(new NewDeliveryOrderCmd());
     }
 
-    public static DroneInformationCmd toModel(DroneInformation droneInformation) {
+    public static DroneInformationCmd toCmd(DroneInformation droneInformation) {
         return DroneInformationCmd.builder()
+                .droneId(droneInformation.getDroneId())
                 .cardinalDirection(droneInformation.getCardinalDirection())
                 .cartesianCoordinateCmd(CartesianCoordinateCmd.toCmd(droneInformation.getCartesianCoordinate()))
-                .actualNewActualDeliveryOrderCmd(NewActualDeliveryOrderCmd.toCmd(droneInformation.getDeliveryOrder()))
+                .newDeliveryOrderCmd(NewDeliveryOrderCmd.toCmd(droneInformation.getDeliveryOrder()))
                 .build();
     }
 }

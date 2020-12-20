@@ -1,4 +1,4 @@
-package s4n.codechallenge.actorsdtos.dtos;
+package s4n.codechallenge.actorsdtos.communication;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,6 +6,9 @@ import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
+import s4n.codechallenge.actorsdtos.dtos.CartesianCoordinateDto;
+import s4n.codechallenge.actorsdtos.dtos.DeliveryOrderDto;
+import s4n.codechallenge.actorsdtos.dtos.DroneInformationDto;
 import s4n.codechallenge.entities.DroneInformation;
 
 @Generated
@@ -13,7 +16,7 @@ import s4n.codechallenge.entities.DroneInformation;
 @Getter
 @Builder
 @AllArgsConstructor
-public class MoveDroneDto implements DroneManagerDtoCmd {
+public class DroneActuatorToDroneManagerMoveDroneDto implements DroneManagerDtoCmd {
     private byte id;
     private DroneInformationDto droneInformation;
 
@@ -21,7 +24,7 @@ public class MoveDroneDto implements DroneManagerDtoCmd {
         return DroneInformationDto.builder()
                 .cardinalDirection(droneInformation.getCardinalDirection())
                 .cartesianCoordinateDto(CartesianCoordinateDto.toDto(droneInformation.getCartesianCoordinate()))
-                .actualDeliveryOrderDto(DeliveryOrderDto.toDto(droneInformation.getDeliveryOrder()))
+                .actualDeliveryOrderDto(droneInformation.getDeliveryOrder().isPresent() ? DeliveryOrderDto.toDto(droneInformation.getDeliveryOrder().get()) : null)
                 .build();
     }
 }
