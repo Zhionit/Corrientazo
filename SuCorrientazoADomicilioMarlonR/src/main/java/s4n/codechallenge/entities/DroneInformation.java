@@ -1,12 +1,14 @@
 package s4n.codechallenge.entities;
 
-import lombok.*;
-import s4n.codechallenge.dtos.DroneInformationDto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Generated;
+import lombok.Getter;
+import lombok.Setter;
 import s4n.codechallenge.enums.CardinalDirection;
 import s4n.codechallenge.enums.DroneStatus;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 @Generated
 @Getter
@@ -15,24 +17,18 @@ import java.util.List;
 @AllArgsConstructor
 public class DroneInformation {
 
+    private byte droneId;
     private DroneStatus droneStatus;
-    private List<Order> orders;
+    private Optional<DeliveryOrder> deliveryOrder;
     private CardinalDirection cardinalDirection;
     private CartesianCoordinate cartesianCoordinate;
+    private Boolean shouldDeliverOrder;
 
     public DroneInformation() {
-        this.droneStatus = s4n.codechallenge.enums.DroneStatus.AVAILABLE;
+        this.droneId = 0;
+        this.droneStatus = DroneStatus.AVAILABLE;
         this.cardinalDirection = CardinalDirection.NORTE;
         this.cartesianCoordinate = new CartesianCoordinate();
-        this.orders = new ArrayList<>();
-    }
-
-    public DroneInformation toModel(DroneInformationDto droneInformationDto) {
-        return DroneInformation.builder()
-                .cardinalDirection(droneInformationDto.getCardinalDirection())
-                .cartesianCoordinate(CartesianCoordinate.toModel(droneInformationDto.getCartesianCoordinate()))
-                .orders(Order.toModels(droneInformationDto.getOrders()))
-                .droneStatus(droneInformationDto.getDroneStatus())
-                .build();
+        this.deliveryOrder = Optional.of(new DeliveryOrder(new CartesianCoordinate()));
     }
 }

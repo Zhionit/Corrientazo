@@ -1,4 +1,4 @@
-package s4n.codechallenge.entities;
+package s4n.codechallenge.actorsdtos.dtos;
 
 import lombok.Builder;
 import lombok.Generated;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class Drone {
+public class RoutesDto {
     private byte id;
-    private DroneInformation droneInformation;
+    private OrderDto orderDto;
 }

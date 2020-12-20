@@ -7,13 +7,13 @@ import lombok.Getter;
 @Generated
 @Getter
 @AllArgsConstructor
-public enum OrderStatus {
-    DELIVERED("Delivered"), UNDELIVERED("No entregado");
+public enum RouteStatus {
+    WAITING("Waiting"), IN_PROGRESS("In Progress"), FINISHED("Finished");
 
     String value;
 
     @Override
     public String toString() {
-        return getValue();
-    }
+            return getValue();
+        }
 }

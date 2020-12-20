@@ -1,7 +1,10 @@
 package s4n.codechallenge.entities;
 
-import lombok.*;
-import s4n.codechallenge.dtos.CartesianCoordinateDto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Generated;
+import lombok.Getter;
+import lombok.Setter;
 
 @Generated
 @Setter
@@ -15,13 +18,6 @@ public class CartesianCoordinate {
     public CartesianCoordinate() {
         xAxe = 0;
         yAxe = 0;
-    }
-
-    public static CartesianCoordinate toModel(CartesianCoordinateDto cartesianCoordinateDto) {
-        return CartesianCoordinate.builder()
-                .xAxe(cartesianCoordinateDto.getXAxe())
-                .yAxe(cartesianCoordinateDto.getYAxe())
-                .build();
     }
 
     @Override
