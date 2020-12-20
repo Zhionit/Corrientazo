@@ -20,6 +20,7 @@ public class DroneInformation {
     private Optional<DeliveryOrder> deliveryOrder;
     private CardinalDirection cardinalDirection;
     private CartesianCoordinate cartesianCoordinate;
+    private Boolean shouldDeliverOrder;
 
     public DroneInformation() {
         this.droneStatus = DroneStatus.AVAILABLE;
