@@ -1,5 +1,6 @@
 package s4n.codechallenge.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import java.util.Optional;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
 public class DroneInformation {
 
     private byte droneId;
@@ -23,6 +25,7 @@ public class DroneInformation {
     private Boolean shouldDeliverOrder;
 
     public DroneInformation() {
+        this.droneId = 0;
         this.droneStatus = DroneStatus.AVAILABLE;
         this.cardinalDirection = CardinalDirection.NORTE;
         this.cartesianCoordinate = new CartesianCoordinate();

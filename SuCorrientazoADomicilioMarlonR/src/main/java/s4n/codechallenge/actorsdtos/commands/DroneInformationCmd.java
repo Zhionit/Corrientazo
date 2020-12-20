@@ -23,8 +23,8 @@ public class DroneInformationCmd {
 
     public DroneInformationCmd() {
         this.cardinalDirection = CardinalDirection.NORTE;
-        this.cartesianCoordinateCmd = new CartesianCoordinateCmd();
-        this.newDeliveryOrderCmd = Optional.of(new NewDeliveryOrderCmd());
+        this.cartesianCoordinateCmd = CartesianCoordinateCmd.builder().build();
+        this.newDeliveryOrderCmd = Optional.of(NewDeliveryOrderCmd.builder().build());
     }
 
     public static DroneInformationCmd toCmd(DroneInformation droneInformation) {

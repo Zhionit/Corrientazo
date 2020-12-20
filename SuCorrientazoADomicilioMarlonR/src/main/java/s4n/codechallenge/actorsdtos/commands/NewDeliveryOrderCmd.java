@@ -1,9 +1,9 @@
 package s4n.codechallenge.actorsdtos.commands;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import s4n.codechallenge.entities.DeliveryOrder;
 
@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 public class NewDeliveryOrderCmd {
 
     private byte id;

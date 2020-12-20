@@ -1,5 +1,6 @@
 package s4n.codechallenge.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
@@ -10,6 +11,7 @@ import s4n.codechallenge.enums.DeliveryOrderStatus;
 @Setter
 @Getter
 @Builder
+@AllArgsConstructor
 public class DeliveryOrder {
     private byte id;
     private DeliveryOrderStatus deliveryOrderStatus;

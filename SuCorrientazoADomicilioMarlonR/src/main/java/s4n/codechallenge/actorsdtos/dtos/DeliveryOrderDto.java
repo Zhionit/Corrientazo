@@ -1,5 +1,6 @@
 package s4n.codechallenge.actorsdtos.dtos;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
@@ -14,12 +15,14 @@ import java.util.stream.Collectors;
 @Setter
 @Getter
 @Builder
+@AllArgsConstructor
 public class DeliveryOrderDto {
     private byte id;
     private DeliveryOrderStatus deliveryOrderStatus;
     private CartesianCoordinateDto cartesianCoordinateDtoOfDestinationDto;
 
     public DeliveryOrderDto(CartesianCoordinateDto cartesianCoordinateDtoOfDestinationDto) {
+        this.id = 0;
         this.deliveryOrderStatus = DeliveryOrderStatus.UNDELIVERED;
         this.cartesianCoordinateDtoOfDestinationDto = cartesianCoordinateDtoOfDestinationDto;
     }

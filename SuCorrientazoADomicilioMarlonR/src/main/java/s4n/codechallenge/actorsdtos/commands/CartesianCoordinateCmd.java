@@ -14,11 +14,6 @@ public class CartesianCoordinateCmd {
     private byte xAxe;
     private byte yAxe;
 
-    public CartesianCoordinateCmd() {
-        xAxe = 0;
-        yAxe = 0;
-    }
-
     public static CartesianCoordinateCmd toCmd(CartesianCoordinate cartesianCoordinate) {
         return CartesianCoordinateCmd.builder()
                 .xAxe(cartesianCoordinate.getXAxe())

@@ -182,12 +182,12 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
     private Behavior<DroneManagerDtoCmd> droneSyncBehavior(DroneActuatorToDroneManagerSyncDroneDto droneActuatorToDroneManagerSyncDroneDto) {
         coordinateDroneMovements(droneActuatorToDroneManagerSyncDroneDto);
         moveDroneInDroneActuator(this.droneInformation);
+
         return this;
     }
 
     private Behavior<DroneManagerDtoCmd> moveDroneBehavior(DroneActuatorToDroneManagerMoveDroneDto droneActuatorToDroneManagerMoveDroneDto) {
-        //moveDroneInDroneActuator(moveDroneDto);
-        //moveDroneDto.getDroneInformation().
+        moveDroneInDroneActuator(this.droneInformation);
 
         return this;
     }

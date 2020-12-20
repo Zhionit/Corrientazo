@@ -6,8 +6,6 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
-import lombok.Builder;
-import lombok.Generated;
 import s4n.codechallenge.actorsdtos.DroneActuatorDtoCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorMoveDroneCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorSyncCmd;
@@ -23,8 +21,6 @@ import s4n.codechallenge.services.DroneActuator;
 import java.util.List;
 import java.util.Optional;
 
-@Generated
-@Builder
 public class DroneActuatorImpl extends AbstractBehavior<DroneActuatorDtoCmd> implements DroneActuator {
 
     private List<Drone> drones;

@@ -1,5 +1,6 @@
 package s4n.codechallenge.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import java.util.List;
 @Setter
 @Builder
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class Route {
     private final byte routeId;
     private final Drone drone;
