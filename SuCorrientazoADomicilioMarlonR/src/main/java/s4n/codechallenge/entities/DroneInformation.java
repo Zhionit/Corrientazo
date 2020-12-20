@@ -1,7 +1,10 @@
 package s4n.codechallenge.entities;
 
-import lombok.*;
-import s4n.codechallenge.dtos.DroneInformationDto;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Generated;
+import lombok.Getter;
+import lombok.Setter;
 import s4n.codechallenge.enums.CardinalDirection;
 import s4n.codechallenge.enums.DroneStatus;
 
@@ -25,14 +28,5 @@ public class DroneInformation {
         this.cardinalDirection = CardinalDirection.NORTE;
         this.cartesianCoordinate = new CartesianCoordinate();
         this.orders = new ArrayList<>();
-    }
-
-    public DroneInformation toModel(DroneInformationDto droneInformationDto) {
-        return DroneInformation.builder()
-                .cardinalDirection(droneInformationDto.getCardinalDirection())
-                .cartesianCoordinate(CartesianCoordinate.toModel(droneInformationDto.getCartesianCoordinate()))
-                .orders(Order.toModels(droneInformationDto.getOrders()))
-                .droneStatus(droneInformationDto.getDroneStatus())
-                .build();
     }
 }

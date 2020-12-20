@@ -1,7 +1,7 @@
 package s4n.codechallenge.entities;
 
 import lombok.*;
-import s4n.codechallenge.dtos.CartesianCoordinateDto;
+import s4n.codechallenge.actorsdtos.dtos.CartesianCoordinateDto;
 
 @Generated
 @Setter
