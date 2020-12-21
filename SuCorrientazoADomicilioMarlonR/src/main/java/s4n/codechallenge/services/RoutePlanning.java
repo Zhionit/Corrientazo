@@ -13,7 +13,7 @@ public interface RoutePlanning {
 
     void validateDrone(byte amountsOrders, int ordersAmount);
 
-    void generateDroneRoute(List<String> encodedOrders);
+    void generateDroneRoute(List<String> encodedOrders, int actualEncodedOrderStarter, int actualMovementCharStarter);
 
     void sendInformationToDroneManager();
 

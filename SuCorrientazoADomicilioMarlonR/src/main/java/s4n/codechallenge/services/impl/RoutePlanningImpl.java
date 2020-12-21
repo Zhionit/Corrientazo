@@ -19,25 +19,25 @@ import s4n.codechallenge.entities.ValueAndCoordinate;
 import s4n.codechallenge.enums.CoordinatesDirection;
 import s4n.codechallenge.services.RoutePlanning;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> implements RoutePlanning {
 
     private static final byte MAX_DRONES_ALLOWED = 20;
     private static final byte MAX_AMOUNT_ORDERS_ALLOWED = 3;
+    public static final int MAX_LIMITE_DE_CUADRAS = 10;
     //TODO - Crear los drones
     private String fileName;
     private List<String> encodedOrders;
     private byte droneId;
     private CartesianCoordinate actualCartesianCoordinate;
     private CoordinatesDirection actualCoordinatesDirection;
+    private CircularValueAndCoordinate actualCircularListOfCoordinates;
+    private int limiteDeCuadras;
 
     private RoutesPlanningToDroneManagerCmd routesPlanningToDroneManagerCmd;
     private ActorRef<RoutePlanningDtoCmd> routePlanningDtoCmdActorRef;
     private final ActorRef<DroneManagerDtoCmd> droneManagerDtoCmdActorRef;
-    private List<CircularValueAndCoordinate> circularListOfCoordinates;
 
 
     public RoutePlanningImpl(ActorContext<RoutePlanningDtoCmd> context) {
@@ -71,7 +71,7 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
         this.droneId = Byte.parseByte(cleanedFileName);
         validateDrone(this.droneId, fileManagerToRoutePlanningCmd.getEncodedOrders().size());
 
-        generateDroneRoute(fileManagerToRoutePlanningCmd.getEncodedOrders());
+        generateDroneRoute(fileManagerToRoutePlanningCmd.getEncodedOrders(), 0, 0);
 
         return this;
     }
@@ -97,37 +97,75 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     }
 
     @Override
-    public void generateDroneRoute(List<String> encodedOrders) {
+    public void generateDroneRoute(List<String> encodedOrders, int actualEncodedOrderStarter, int actualMovementCharStarter) {
 
-        readMovement();
-        interpretMovement();
+        int actualEncodedOrder = actualEncodedOrderStarter;
+        int actualMovementChar = actualMovementCharStarter;
+
+        char movementChar = readMovement(encodedOrders, actualEncodedOrder, actualMovementChar);
+        interpretMovement(movementChar);
         applyMovement();
         saveCartesianCoordinate();
-        hasNextMovement();
-
+        hasNextMovement(encodedOrders, actualMovementChar, actualEncodedOrder);
     }
 
-    private void readMovement() {
+    private char readMovement(List<String> encodedOrders, int actualEncodedOrder, int actualMovementChar) {
 
+        String encodedOrder = encodedOrders.get(actualEncodedOrder);
+        char movementChar = encodedOrder.charAt(actualMovementChar);
+        actualEncodedOrder ++;
+
+        return movementChar;
     }
 
-    private void interpretMovement() {
+    private void interpretMovement(char movementChar) {
 
+        switch (movementChar) {
+            case 'D':
+                this.actualCircularListOfCoordinates = findActualCoordinate(this.actualCircularListOfCoordinates).getNext();
+                this.actualCoordinatesDirection = findCoordinatesDirection(this.actualCircularListOfCoordinates);
+            case 'I':
+                this.actualCircularListOfCoordinates = findActualCoordinate(this.actualCircularListOfCoordinates).getBefore();
+                this.actualCoordinatesDirection = findCoordinatesDirection(this.actualCircularListOfCoordinates);
+            case 'A':
+                this.actualCoordinatesDirection = findCoordinatesDirection(this.actualCircularListOfCoordinates);
+        }
+    }
+
+    private CoordinatesDirection findCoordinatesDirection(CircularValueAndCoordinate circularListOfCoordinates) {
+        return CoordinatesDirection.valueOf(circularListOfCoordinates.getSame().getName());
+    }
+
+    private CircularValueAndCoordinate findActualCoordinate(CircularValueAndCoordinate circularListOfCoordinatesP) {
+
+        CircularValueAndCoordinate circularListOfCoordinates = circularListOfCoordinatesP;
+
+        if (this.actualCoordinatesDirection.getValue().equals(circularListOfCoordinates.getSame().getName())) {
+            return circularListOfCoordinates;
+        }
+
+        circularListOfCoordinates = circularListOfCoordinates.getNext();
+        findActualCoordinate(circularListOfCoordinates);
+
+        return null;
     }
 
     private void applyMovement() {
-
+        this.actualCartesianCoordinate.incrementValues(
+                this.actualCircularListOfCoordinates.getSame().getX(),
+                this.actualCircularListOfCoordinates.getSame().getY()
+        );
     }
 
     private void saveCartesianCoordinate() {
 
     }
 
-    private void hasNextMovement() {
+    private void hasNextMovement(List<String> encodedOrders, int actualMovementChar, int actualEncodedOrder) {
         if (true)
             setLastMovementAsOrderDestination();
         else
-            readMovement();
+            readMovement(this.encodedOrders, actualEncodedOrder, actualMovementChar);
 
     }
 
@@ -143,27 +181,27 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
         circularValueAndCoordinateX.setBefore(circularValueAndCoordinateY);
         circularValueAndCoordinateX.setSame(new ValueAndCoordinate("x", 1, 0));
-        circularValueAndCoordinateX.setAfter(circularValueAndCoordinateNy);
+        circularValueAndCoordinateX.setNext(circularValueAndCoordinateNy);
 
         circularValueAndCoordinateY.setBefore(circularValueAndCoordinateNx);
         circularValueAndCoordinateY.setSame(new ValueAndCoordinate("y", 0, 1));
-        circularValueAndCoordinateY.setAfter(circularValueAndCoordinateX);
+        circularValueAndCoordinateY.setNext(circularValueAndCoordinateX);
 
         circularValueAndCoordinateNx.setBefore(circularValueAndCoordinateNy);
         circularValueAndCoordinateNx.setSame(new ValueAndCoordinate("-x", -1, 0));
-        circularValueAndCoordinateNx.setAfter(circularValueAndCoordinateY);
+        circularValueAndCoordinateNx.setNext(circularValueAndCoordinateY);
 
         circularValueAndCoordinateNy.setBefore(circularValueAndCoordinateX);
         circularValueAndCoordinateNy.setSame(new ValueAndCoordinate("-y", 0, -1));
-        circularValueAndCoordinateNy.setAfter(circularValueAndCoordinateNx);
+        circularValueAndCoordinateNy.setNext(circularValueAndCoordinateNx);
 
-        this.circularListOfCoordinates = Arrays.asList(circularValueAndCoordinateX, circularValueAndCoordinateY,
-                circularValueAndCoordinateNx, circularValueAndCoordinateNy);
+        this.actualCircularListOfCoordinates = circularValueAndCoordinateY;
     }
 
     private void buildInitialValues() {
         this.actualCoordinatesDirection = CoordinatesDirection.Y;
         this.actualCartesianCoordinate = new CartesianCoordinate(0,0);
+        this.limiteDeCuadras = MAX_LIMITE_DE_CUADRAS;
     }
 
     @Override

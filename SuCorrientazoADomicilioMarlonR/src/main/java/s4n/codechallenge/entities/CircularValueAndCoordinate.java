@@ -12,5 +12,5 @@ import lombok.Setter;
 public class CircularValueAndCoordinate {
     private CircularValueAndCoordinate before;
     private ValueAndCoordinate same;
-    private CircularValueAndCoordinate after;
+    private CircularValueAndCoordinate next;
 }

@@ -20,6 +20,11 @@ public class CartesianCoordinate {
         yAxe = 0;
     }
 
+    public void incrementValues(int x, int y) {
+        xAxe += x;
+        yAxe += y;
+    }
+
     @Override
     public String toString() {
         return "(" + xAxe + ", " + yAxe +')';
