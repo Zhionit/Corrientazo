@@ -13,6 +13,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ValueAndCoordinate {
     private String name;
-    private int x;
-    private int y;
+    private CartesianCoordinate cartesianCoordinate;
 }

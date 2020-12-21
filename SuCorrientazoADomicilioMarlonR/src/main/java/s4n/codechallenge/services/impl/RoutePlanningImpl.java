@@ -9,6 +9,10 @@ import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.RoutePlanningDtoCmd;
+import s4n.codechallenge.actorsdtos.commands.DeliveryOrderCmd;
+import s4n.codechallenge.actorsdtos.commands.DroneCmd;
+import s4n.codechallenge.actorsdtos.commands.RouteCoordinatesCmd;
+import s4n.codechallenge.actorsdtos.commands.ValueAndCoordinateCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToRoutePlanningDto;
 import s4n.codechallenge.actorsdtos.communication.FileManagerToRoutePlanningCmd;
 import s4n.codechallenge.actorsdtos.communication.RoutePlanningToFileManagerDtoFailException;
@@ -20,6 +24,7 @@ import s4n.codechallenge.enums.CoordinatesDirection;
 import s4n.codechallenge.services.RoutePlanning;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> implements RoutePlanning {
@@ -157,8 +162,8 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
     private void applyMovement() {
         this.actualCartesianCoordinate.incrementValues(
-                this.actualCircularListOfCoordinates.getSame().getX(),
-                this.actualCircularListOfCoordinates.getSame().getY()
+                this.actualCircularListOfCoordinates.getSame().getCartesianCoordinate().getXAxe(),
+                this.actualCircularListOfCoordinates.getSame().getCartesianCoordinate().getYAxe()
         );
 
         validateCuadrasLength(this.actualCartesianCoordinate);
@@ -176,26 +181,30 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     private void saveCartesianCoordinate() {
         ValueAndCoordinate valueAndCoordinate = ValueAndCoordinate.builder()
                 .name(this.actualCoordinatesDirection.name())
-                .x(this.actualCartesianCoordinate.getXAxe())
-                .y(this.actualCartesianCoordinate.getYAxe())
+                .cartesianCoordinate(
+                        new CartesianCoordinate(this.actualCartesianCoordinate.getXAxe(), this.actualCartesianCoordinate.getYAxe())
+                )
                 .build();
 
         this.cartesianCoordinatesOfRoute.add(valueAndCoordinate);
     }
 
     private void hasNextMovement(List<String> encodedOrders, int actualMovementChar, int actualEncodedOrder) {
-        if (true)
-            setLastMovementAsOrderDestination();
-        else
-            readMovement(encodedOrders, actualEncodedOrder, actualMovementChar);
 
+        if (encodedOrders.get(actualEncodedOrder).length() < (actualMovementChar + 1)) {
+            setLastMovementAsOrderDestination();
+            sendInformationToDroneManager();
+        } else {
+            readMovement(encodedOrders, actualEncodedOrder, actualMovementChar);
+        }
     }
 
     private void setLastMovementAsOrderDestination() {
         ValueAndCoordinate valueAndCoordinate = ValueAndCoordinate.builder()
                 .name(this.actualCoordinatesDirection.name())
-                .x(this.actualCartesianCoordinate.getXAxe())
-                .y(this.actualCartesianCoordinate.getYAxe())
+                .cartesianCoordinate(
+                        new CartesianCoordinate(this.actualCartesianCoordinate.getXAxe(), this.actualCartesianCoordinate.getYAxe())
+                )
                 .build();
 
         this.everyCartesianCoordinateEndOfRoute.add(valueAndCoordinate);
@@ -209,19 +218,38 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
         CircularValueAndCoordinate circularValueAndCoordinateNy = CircularValueAndCoordinate.builder().build();
 
         circularValueAndCoordinateX.setBefore(circularValueAndCoordinateY);
-        circularValueAndCoordinateX.setSame(new ValueAndCoordinate("x", 1, 0));
+        circularValueAndCoordinateX.setSame(
+                ValueAndCoordinate.builder()
+                        .name("x")
+                        .cartesianCoordinate(new CartesianCoordinate(1, 0))
+                        .build()
+        );
         circularValueAndCoordinateX.setNext(circularValueAndCoordinateNy);
 
         circularValueAndCoordinateY.setBefore(circularValueAndCoordinateNx);
-        circularValueAndCoordinateY.setSame(new ValueAndCoordinate("y", 0, 1));
+        circularValueAndCoordinateY.setSame(
+                ValueAndCoordinate.builder()
+                        .name("y")
+                        .cartesianCoordinate(new CartesianCoordinate(0, 1))
+                        .build()
+        );
         circularValueAndCoordinateY.setNext(circularValueAndCoordinateX);
 
         circularValueAndCoordinateNx.setBefore(circularValueAndCoordinateNy);
-        circularValueAndCoordinateNx.setSame(new ValueAndCoordinate("-x", -1, 0));
+        circularValueAndCoordinateNx.setSame(
+                ValueAndCoordinate.builder()
+                        .name("-x")
+                        .cartesianCoordinate(new CartesianCoordinate(-1, 0))
+                        .build()
+        );
         circularValueAndCoordinateNx.setNext(circularValueAndCoordinateY);
 
         circularValueAndCoordinateNy.setBefore(circularValueAndCoordinateX);
-        circularValueAndCoordinateNy.setSame(new ValueAndCoordinate("-y", 0, -1));
+        circularValueAndCoordinateNy.setSame(
+                ValueAndCoordinate.builder()
+                        .name("-y").cartesianCoordinate(new CartesianCoordinate(0, -1))
+                        .build()
+        );
         circularValueAndCoordinateNy.setNext(circularValueAndCoordinateNx);
 
         this.actualCircularListOfCoordinates = circularValueAndCoordinateY;
@@ -237,7 +265,38 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
     @Override
     public void sendInformationToDroneManager() {
+        byte routeId = 1;
+        DroneCmd droneCmd = DroneCmd.builder().droneId(this.droneId).build();
 
+        int startDeliverId = 0;
+        DeliveryOrderCmd linearListDeliveryOrdersCmds = buildLinearListDeliveryOrdersCmds(startDeliverId);
+        List<DeliveryOrderCmd> deliveryOrdersCmds = Arrays.asList(linearListDeliveryOrdersCmds);
+
+        RoutesPlanningToDroneManagerCmd message = RoutesPlanningToDroneManagerCmd.builder()
+                .droneCmd(droneCmd)
+                .routeId(routeId)
+                .linearListOfDeliveryOrdersCmd(deliveryOrdersCmds)
+                .routesCoordinates(RouteCoordinatesCmd.toCmds(this.actualCircularListOfCoordinates))
+                .replyTo(this.getContext().getSelf())
+                .build();
+
+        droneManagerDtoCmdActorRef.tell(message);
+    }
+
+    private DeliveryOrderCmd buildLinearListDeliveryOrdersCmds(Integer deliverId) {
+
+        int incrementValue = 1;
+        if (deliverId > cartesianCoordinatesOfRoute.size()) {
+            ValueAndCoordinate valueAndCoordinate = cartesianCoordinatesOfRoute.get(deliverId);
+
+            return DeliveryOrderCmd.builder()
+                    .id(deliverId.byteValue())
+                    .valueAndCoordinateCmd(ValueAndCoordinateCmd.toCmd(valueAndCoordinate))
+                    .nextDeliveryOrderCmd(buildLinearListDeliveryOrdersCmds(deliverId + incrementValue))
+                    .build();
+        }
+
+        return null;
     }
 
     @Override

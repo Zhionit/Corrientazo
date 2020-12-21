@@ -14,7 +14,7 @@ import java.util.Optional;
 @Builder
 @RequiredArgsConstructor
 public class RouteCoordinates {
-    private final Optional<CartesianCoordinate> beforeOptional;
-    private final Optional<CartesianCoordinate> actualOptional;
-    private final Optional<CartesianCoordinate> nextOptional;
+    private final Optional<ValueAndCoordinate> beforeOptional;
+    private final Optional<ValueAndCoordinate> actualOptional;
+    private final Optional<ValueAndCoordinate> nextOptional;
 }

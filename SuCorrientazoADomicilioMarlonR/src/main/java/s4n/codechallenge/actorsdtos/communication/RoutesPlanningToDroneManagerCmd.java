@@ -20,7 +20,7 @@ import java.util.List;
 public class RoutesPlanningToDroneManagerCmd implements DroneManagerDtoCmd {
     private final byte routeId;
     private final DroneCmd droneCmd;
-    private final List<DeliveryOrderCmd> deliveryOrdersCmds;
+    private final List<DeliveryOrderCmd> linearListOfDeliveryOrdersCmd;
     private final List<RouteCoordinatesCmd> routesCoordinates;
     private final ActorRef<RoutePlanningDtoCmd> replyTo;
 }

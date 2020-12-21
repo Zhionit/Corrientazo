@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
+import s4n.codechallenge.entities.CartesianCoordinate;
 import s4n.codechallenge.entities.DeliveryOrder;
 
 import java.util.List;
@@ -16,13 +17,18 @@ import java.util.stream.Collectors;
 @Builder
 public class DeliveryOrderCmd {
     private byte id;
-    private CartesianCoordinateCmd cartesianCoordinateOfDestinationCmd;
+    private ValueAndCoordinateCmd valueAndCoordinateCmd;
     private DeliveryOrderCmd nextDeliveryOrderCmd;
 
     public static DeliveryOrder toModel(DeliveryOrderCmd deliveryOrderCmd) {
+        CartesianCoordinate cartesianCoordinateOfDestination = CartesianCoordinate.builder()
+                .yAxe(deliveryOrderCmd.valueAndCoordinateCmd.getY())
+                .xAxe(deliveryOrderCmd.valueAndCoordinateCmd.getX())
+                .build();
+
         return DeliveryOrder.builder()
                 .id(deliveryOrderCmd.getId())
-                .cartesianCoordinateOfDestination(CartesianCoordinateCmd.toModel(deliveryOrderCmd.cartesianCoordinateOfDestinationCmd))
+                .cartesianCoordinateOfDestination(cartesianCoordinateOfDestination)
                 .nextDeliveryOrder(Objects.isNull(deliveryOrderCmd.getNextDeliveryOrderCmd()) ? null : DeliveryOrderCmd.toModel(deliveryOrderCmd.getNextDeliveryOrderCmd()))
                 .build();
     }
