@@ -112,11 +112,20 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
         int actualEncodedOrder = actualEncodedOrderStarter;
         int actualMovementChar = actualMovementCharStarter;
 
-        char movementChar = readMovement(encodedOrders, actualEncodedOrder, actualMovementChar);
-        interpretMovement(movementChar);
-        applyMovement();
-        saveCartesianCoordinate();
-        hasNextMovement(encodedOrders, actualMovementChar, actualEncodedOrder);
+        stepsToGenerateDroneRoute(encodedOrders, actualEncodedOrder, actualMovementChar);
+    }
+
+    private void stepsToGenerateDroneRoute(List<String> encodedOrders, int actualEncodedOrder, int actualMovementChar) {
+
+        if (actualEncodedOrder <= encodedOrders.size()) {
+            char movementChar = readMovement(encodedOrders, actualEncodedOrder, actualMovementChar);
+            interpretMovement(movementChar);
+            applyMovement();
+            saveCartesianCoordinate();
+            setLastNextMovement(encodedOrders, actualMovementChar, actualEncodedOrder);
+        }
+
+        sendInformationToDroneManager();
     }
 
     private char readMovement(List<String> encodedOrders, int actualEncodedOrder, int actualMovementChar) {
@@ -189,13 +198,12 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
         this.cartesianCoordinatesOfRoute.add(valueAndCoordinate);
     }
 
-    private void hasNextMovement(List<String> encodedOrders, int actualMovementChar, int actualEncodedOrder) {
+    private void setLastNextMovement(List<String> encodedOrders, int actualMovementChar, int actualEncodedOrder) {
 
-        if (encodedOrders.get(actualEncodedOrder).length() < (actualMovementChar + 1)) {
+        if (encodedOrders.get(actualEncodedOrder).length() == actualMovementChar) {
             setLastMovementAsOrderDestination();
-            sendInformationToDroneManager();
         } else {
-            readMovement(encodedOrders, actualEncodedOrder, actualMovementChar);
+            stepsToGenerateDroneRoute(encodedOrders, actualEncodedOrder, actualMovementChar);
         }
     }
 
@@ -208,6 +216,7 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
                 .build();
 
         this.everyCartesianCoordinateEndOfRoute.add(valueAndCoordinate);
+        stepsToGenerateDroneRoute(encodedOrders);
     }
 
     private void buildCircularListOfCoordinates() {
@@ -305,6 +314,6 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     }
 
     private void respondToParentActuatorErrorMessage(RoutePlanningToFileManagerDtoFailException routePlanningToFileManagerDtoFailException) {
-
+        respondToParentActuator(null);//Todo
     }
 }

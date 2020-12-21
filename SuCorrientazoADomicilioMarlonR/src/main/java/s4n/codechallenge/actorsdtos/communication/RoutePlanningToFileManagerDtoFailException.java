@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class RoutePlanningToFileManagerDtoFailException {
+public class RoutePlanningToFileManagerDtoFailException implements RoutesPlanningToFileManagerDto{
     private String errorMessage;
     private byte droneId;
 }
