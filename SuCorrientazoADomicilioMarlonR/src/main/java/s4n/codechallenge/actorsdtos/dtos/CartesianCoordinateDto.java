@@ -13,8 +13,8 @@ import s4n.codechallenge.entities.CartesianCoordinate;
 @Builder
 @AllArgsConstructor
 public class CartesianCoordinateDto {
-    private byte xAxe;
-    private byte yAxe;
+    private int xAxe;
+    private int yAxe;
 
     public CartesianCoordinateDto() {
         xAxe = 0;

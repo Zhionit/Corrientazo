@@ -12,8 +12,8 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 public class CartesianCoordinate {
-    private byte xAxe;
-    private byte yAxe;
+    private int xAxe;
+    private int yAxe;
 
     public CartesianCoordinate() {
         xAxe = 0;

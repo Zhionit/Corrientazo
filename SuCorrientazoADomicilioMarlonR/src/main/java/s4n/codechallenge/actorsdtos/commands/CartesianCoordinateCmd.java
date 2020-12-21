@@ -11,8 +11,8 @@ import s4n.codechallenge.entities.CartesianCoordinate;
 @Setter
 @Builder
 public class CartesianCoordinateCmd {
-    private byte xAxe;
-    private byte yAxe;
+    private int xAxe;
+    private int yAxe;
 
     public static CartesianCoordinateCmd toCmd(CartesianCoordinate cartesianCoordinate) {
         return CartesianCoordinateCmd.builder()

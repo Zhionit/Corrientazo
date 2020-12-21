@@ -21,7 +21,7 @@ import s4n.codechallenge.actorsdtos.commands.DroneCmd;
 import s4n.codechallenge.actorsdtos.commands.DroneInformationCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToRoutePlanningContainerDto;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToRoutePlanningDto;
-import s4n.codechallenge.actorsdtos.communication.PlanningRoutesToDroneManagerCmd;
+import s4n.codechallenge.actorsdtos.communication.RoutesPlanningToDroneManagerCmd;
 import s4n.codechallenge.actorsdtos.commands.NewDeliveryOrderCmd;
 import s4n.codechallenge.actorsdtos.commands.RouteCoordinatesCmd;
 import s4n.codechallenge.actorsdtos.dtos.CartesianCoordinateDto;
@@ -61,7 +61,7 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
     private DroneInformationCmd droneInformationCmd;
     private List<FinalOrderInformation> finalOrderStatuses;
 
-    private PlanningRoutesToDroneManagerCmd planningRoutesToDroneManagerCmd;
+    private RoutesPlanningToDroneManagerCmd routesPlanningToDroneManagerCmd;
     private ActorRef<RoutePlanningDtoCmd> routePlanningActorRefReplyTo;
     private final ActorRef<DroneActuatorDtoCmd> droneActuatorActorRef;
 
@@ -108,21 +108,21 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
     public Receive<DroneManagerDtoCmd> createReceive() {
         ReceiveBuilder<DroneManagerDtoCmd> builder = newReceiveBuilder();
 
-        builder.onMessage(PlanningRoutesToDroneManagerCmd.class, this::processDroneRoutes);
+        builder.onMessage(RoutesPlanningToDroneManagerCmd.class, this::processDroneRoutes);
         builder.onMessage(DroneActuatorToDroneManagerSyncDroneDto.class, this::droneSyncBehavior);
         builder.onMessage(DroneActuatorToDroneManagerMoveDroneDto.class, this::moveDroneBehavior);
 
         return builder.build();
     }
 
-    private Behavior<DroneManagerDtoCmd> processDroneRoutes(PlanningRoutesToDroneManagerCmd planningRoutesToDroneManagerCmd) {
-        this.planningRoutesToDroneManagerCmd = planningRoutesToDroneManagerCmd;
-        this.routePlanningActorRefReplyTo = this.planningRoutesToDroneManagerCmd.getReplyTo();
+    private Behavior<DroneManagerDtoCmd> processDroneRoutes(RoutesPlanningToDroneManagerCmd routesPlanningToDroneManagerCmd) {
+        this.routesPlanningToDroneManagerCmd = routesPlanningToDroneManagerCmd;
+        this.routePlanningActorRefReplyTo = this.routesPlanningToDroneManagerCmd.getReplyTo();
 
-        buildDeliveryOrders(this.planningRoutesToDroneManagerCmd.getDeliveryOrdersCmds());
-        buildDroneInformation(this.planningRoutesToDroneManagerCmd.getDroneCmd());
-        buildDrone(this.planningRoutesToDroneManagerCmd.getDroneCmd());
-        buildRoute(planningRoutesToDroneManagerCmd.getRouteId(), this.planningRoutesToDroneManagerCmd.getRoutesCoordinates());
+        buildDeliveryOrders(this.routesPlanningToDroneManagerCmd.getDeliveryOrdersCmds());
+        buildDroneInformation(this.routesPlanningToDroneManagerCmd.getDroneCmd());
+        buildDrone(this.routesPlanningToDroneManagerCmd.getDroneCmd());
+        buildRoute(routesPlanningToDroneManagerCmd.getRouteId(), this.routesPlanningToDroneManagerCmd.getRoutesCoordinates());
         buildDroneInformationCmd();
 
         getContext().getLog().info("Sync drone to process routes {}");

@@ -17,7 +17,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class PlanningRoutesToDroneManagerCmd implements DroneManagerDtoCmd {
+public class RoutesPlanningToDroneManagerCmd implements DroneManagerDtoCmd {
     private final byte routeId;
     private final DroneCmd droneCmd;
     private final List<DeliveryOrderCmd> deliveryOrdersCmds;
