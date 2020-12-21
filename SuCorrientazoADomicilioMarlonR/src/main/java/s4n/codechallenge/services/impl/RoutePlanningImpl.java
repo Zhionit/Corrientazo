@@ -19,13 +19,16 @@ import s4n.codechallenge.entities.ValueAndCoordinate;
 import s4n.codechallenge.enums.CoordinatesDirection;
 import s4n.codechallenge.services.RoutePlanning;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> implements RoutePlanning {
 
     private static final byte MAX_DRONES_ALLOWED = 20;
     private static final byte MAX_AMOUNT_ORDERS_ALLOWED = 3;
-    public static final int MAX_LIMITE_DE_CUADRAS = 10;
+    public static final int MAX_CUADRAS_LENGTH = 10;
+    public static final int MAX_CUADRAS_LENGTH_NEGATIVE = -10;
+
     //TODO - Crear los drones
     private String fileName;
     private List<String> encodedOrders;
@@ -34,6 +37,8 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     private CoordinatesDirection actualCoordinatesDirection;
     private CircularValueAndCoordinate actualCircularListOfCoordinates;
     private int limiteDeCuadras;
+    private List<ValueAndCoordinate> cartesianCoordinatesOfRoute;
+    private List<ValueAndCoordinate> everyCartesianCoordinateEndOfRoute;
 
     private RoutesPlanningToDroneManagerCmd routesPlanningToDroneManagerCmd;
     private ActorRef<RoutePlanningDtoCmd> routePlanningDtoCmdActorRef;
@@ -155,21 +160,45 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
                 this.actualCircularListOfCoordinates.getSame().getX(),
                 this.actualCircularListOfCoordinates.getSame().getY()
         );
+
+        validateCuadrasLength(this.actualCartesianCoordinate);
+    }
+
+    private void validateCuadrasLength(CartesianCoordinate actualCartesianCoordinate) {
+        if (actualCartesianCoordinate.getXAxe() > MAX_CUADRAS_LENGTH || actualCartesianCoordinate.getXAxe() < MAX_CUADRAS_LENGTH_NEGATIVE )
+            buildErrorResponseToFileManager("El límite de cuadras a sido excedido", this.droneId);
+
+        if (actualCartesianCoordinate.getYAxe() > MAX_CUADRAS_LENGTH || actualCartesianCoordinate.getYAxe() < MAX_CUADRAS_LENGTH_NEGATIVE )
+            buildErrorResponseToFileManager("El límite de cuadras a sido excedido", this.droneId);
+
     }
 
     private void saveCartesianCoordinate() {
+        ValueAndCoordinate valueAndCoordinate = ValueAndCoordinate.builder()
+                .name(this.actualCoordinatesDirection.name())
+                .x(this.actualCartesianCoordinate.getXAxe())
+                .y(this.actualCartesianCoordinate.getYAxe())
+                .build();
 
+        this.cartesianCoordinatesOfRoute.add(valueAndCoordinate);
     }
 
     private void hasNextMovement(List<String> encodedOrders, int actualMovementChar, int actualEncodedOrder) {
         if (true)
             setLastMovementAsOrderDestination();
         else
-            readMovement(this.encodedOrders, actualEncodedOrder, actualMovementChar);
+            readMovement(encodedOrders, actualEncodedOrder, actualMovementChar);
 
     }
 
     private void setLastMovementAsOrderDestination() {
+        ValueAndCoordinate valueAndCoordinate = ValueAndCoordinate.builder()
+                .name(this.actualCoordinatesDirection.name())
+                .x(this.actualCartesianCoordinate.getXAxe())
+                .y(this.actualCartesianCoordinate.getYAxe())
+                .build();
+
+        this.everyCartesianCoordinateEndOfRoute.add(valueAndCoordinate);
     }
 
     private void buildCircularListOfCoordinates() {
@@ -201,7 +230,9 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     private void buildInitialValues() {
         this.actualCoordinatesDirection = CoordinatesDirection.Y;
         this.actualCartesianCoordinate = new CartesianCoordinate(0,0);
-        this.limiteDeCuadras = MAX_LIMITE_DE_CUADRAS;
+        this.limiteDeCuadras = MAX_CUADRAS_LENGTH_NEGATIVE;
+        this.everyCartesianCoordinateEndOfRoute = new ArrayList<>();
+        this.cartesianCoordinatesOfRoute = new ArrayList<>();
     }
 
     @Override
