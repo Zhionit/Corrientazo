@@ -13,8 +13,12 @@ import lombok.Setter;
 import s4n.codechallenge.actorsdtos.DroneActuatorDtoCmd;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.RoutePlanningDtoCmd;
+import s4n.codechallenge.actorsdtos.commands.CardinalPointCmd;
 import s4n.codechallenge.actorsdtos.commands.CartesianCoordinateCmd;
+import s4n.codechallenge.actorsdtos.commands.DeliveryOrderCmd;
+import s4n.codechallenge.actorsdtos.commands.DroneCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorMoveCmd;
+import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorMoveCmd.MoveDroneCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorSyncCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToRoutePlanningContainerDto;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToRoutePlanningDto;
@@ -29,6 +33,7 @@ import s4n.codechallenge.actorsdtos.dtos.FinalOrderInformationDto;
 import s4n.codechallenge.actorsdtos.dtos.OrderDto;
 import s4n.codechallenge.actorsdtos.dtos.RoutesDto;
 import s4n.codechallenge.entities.CardinalPoint;
+import s4n.codechallenge.entities.CardinalPointWithDirection;
 import s4n.codechallenge.entities.DeliveryOrder;
 import s4n.codechallenge.entities.Drone;
 import s4n.codechallenge.entities.Route;
@@ -44,6 +49,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Generated
 @Getter
@@ -51,9 +58,9 @@ import java.util.Optional;
 public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> implements DroneManager {
     private Route route;
     private Drone drone;
-    private List<DeliveryOrder> deliveryOrders;
     private DeliveryOrder actualDeliveryOrder;
-    private List<FinalOrderInformationDto> finalOrderStatuses;
+    private Set<DeliveryOrder> deliveryOrders;
+    private Set<FinalOrderInformationDto> finalOrderStatuses;
 
     private RoutesPlanningToDroneManagerCmd routesPlanningToDroneManagerCmd;
     private ActorRef<RoutePlanningDtoCmd> routePlanningActorRefReplyTo;
@@ -67,27 +74,6 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
     public static Behavior<DroneManagerDtoCmd> create() {
         return Behaviors.setup(DroneManagerImpl::new);
     }
-
-    @Override
-    public void  moveDroneInDroneActuator(Drone drone) {
-
-        DroneInformation droneInformation = drone.getDroneInformation();
-        DroneInformationCmd nextDroneInformationDto = DroneInformationCmd.builder()
-                .droneId(drone.getId())
-                .cartesianCoordinateCmd(CartesianCoordinateCmd.toCmd(droneInformation.getCartesianCoordinate()))
-                .newDeliveryOrderCmd(NewDeliveryOrderCmd.toCmd(droneInformation.getDeliveryOrder()))
-                .cardinalDirection(droneInformation.getCardinalDirection())
-                .build();
-
-        DroneManagerToDroneActuatorMoveCmd droneManagerToDroneActuatorMoveCmd = DroneManagerToDroneActuatorMoveCmd.builder()
-                .droneId(drone.getId())
-                .droneInformationCmd(nextDroneInformationDto)
-                .shouldDeliverOrder(droneInformation.getShouldDeliverOrder())
-                .build();
-
-        droneActuatorActorRef.tell(droneManagerToDroneActuatorMoveCmd);
-    }
-
 
     @Override
     public Receive<DroneManagerDtoCmd> createReceive() {
@@ -111,37 +97,46 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
         buildDrone(routesPlanningToDroneManagerCmd.getRouteCmd().getDrone().getDroneId());
         this.routesPlanningToDroneManagerCmd = routesPlanningToDroneManagerCmd;
         this.routePlanningActorRefReplyTo = this.routesPlanningToDroneManagerCmd.getReplyTo();
-        int droneId = this.routesPlanningToDroneManagerCmd.getDeliveryDetailsCmd().getDroneCmd().getDroneId();
 
-        buildDeliveryOrders(this.routesPlanningToDroneManagerCmd.getDeliveryDetailsCmd().getDeliveryOrdersCmd());
-        buildDroneInformation(droneId);
-        buildDrone(droneId);
-        buildRoute(routesPlanningToDroneManagerCmd.getRouteId(), this.routesPlanningToDroneManagerCmd.getDeliveryDetailsCmd().getRoutesCoordinatesCmd());
-        buildDroneInformationCmd();
+        buildDeliveryOrders(this.routesPlanningToDroneManagerCmd.getRouteCmd().getDeliveryOrdersCmds());
+        buildRoute(routesPlanningToDroneManagerCmd.getRouteCmd().getRouteId(),
+                this.routesPlanningToDroneManagerCmd.getRouteCmd().getCardinalPointCmds());
 
         getContext().getLog().info("Sync drone to process routes {}");
-        DroneManagerToDroneActuatorSyncCmd droneActuator = new DroneManagerToDroneActuatorSyncCmd(this.getDrone().getId(),
-                this.deliveryOrders, getContext().getSelf());
+
+        DroneManagerToDroneActuatorSyncCmd droneActuator =
+                new DroneManagerToDroneActuatorSyncCmd(DroneCmd.toCmd(this.drone), getContext().getSelf());
+
         droneActuatorActorRef.tell(droneActuator);
 
         return this;
     }
 
     @Override
-    public Behavior<DroneManagerDtoCmd> syncCallChild(DroneManagerToDroneActuatorSyncCmd droneManagerToDroneActuatorSyncCmd) {
-        return null;
+    public void syncCallChild(Drone drone) {
     }
 
     @Override
-    public Behavior<DroneManagerDtoCmd> moveCallChild(DroneManagerToDroneActuatorMoveCmd droneManagerToDroneActuatorMoveCmd) {
-        return null;
+    public void moveCallChild(Drone drone, Boolean shouldDeliverOrder, CardinalPointWithDirection cardinalPointWithDirection) {
+
+        MoveDroneCmd moveDroneCmd = MoveDroneCmd.builder()
+                .droneCmd(DroneCmd.toCmd(drone))
+                .cardinalPointWithDirectionCmd(CardinalPointWithDirectionCmd.toCmd(cardinalPointWithDirection))
+                .shouldDeliverOrder(shouldDeliverOrder)
+                .build();
+        DroneManagerToDroneActuatorMoveCmd droneManagerToDroneActuatorMoveCmd = DroneManagerToDroneActuatorMoveCmd.builder()
+                .moveDroneCmd(moveDroneCmd)
+                .replyTo(getContext().getSelf())
+                .build();
+
+        droneActuatorActorRef.tell(droneManagerToDroneActuatorMoveCmd);
     }
 
     @Override
-    public Behavior<DroneManagerDtoCmd> syncListenChildCall(DroneActuatorToDroneManagerSyncDroneDto droneManagerDtoCmd) {
+    public Behavior<DroneManagerDtoCmd> syncListenChildCall(DroneActuatorToDroneManagerSyncDroneDto droneActuatorToDroneManagerSyncDroneDto) {
 
-        coordinateDroneMovements(droneManagerDtoCmd.getDroneDto());
-        moveDroneInDroneActuator(this.drone);
+        coordinateDroneMovements(droneActuatorToDroneManagerSyncDroneDto.getDroneDto());
+        moveCallChild(this.drone, droneInformation.getShouldDeliverOrder(), cardinalPointWithDirection);
 
         return this;
     }
@@ -149,42 +144,12 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
     @Override
     public Behavior<DroneManagerDtoCmd> moveListenChildCall(DroneActuatorToDroneManagerMoveDroneDto droneActuatorToDroneManagerMoveDroneDto) {
 
-        moveDroneInDroneActuator(this.drone);
+        moveCallChild(this.drone, droneInformation.getShouldDeliverOrder(), cardinalPointWithDirection);
         return this;
     }
 
-    private void buildDroneInformationCmd() {
-        CartesianCoordinateCmd cartesianCoordinateOfDestinationCmd = CartesianCoordinateCmd.toCmd(
-                this.actualDeliveryOrder.getCardinalPoint());
-        Optional<NewDeliveryOrderCmd> newDeliveryOrderCmd = Optional.of(NewDeliveryOrderCmd.builder()
-                .id(this.actualDeliveryOrder.getId())
-                .cartesianCoordinateOfDestinationCmd(cartesianCoordinateOfDestinationCmd)
-                .build());
-
-        CartesianCoordinateCmd cartesianCoordinateCmd = CartesianCoordinateCmd.toCmd(
-                this.drone.getDroneInformation().getCartesianCoordinate());
-        this.droneInformationCmd = DroneInformationCmd.builder()
-                .droneId(this.drone.getId())
-                .newDeliveryOrderCmd(newDeliveryOrderCmd)
-                .cardinalDirection(this.drone.getDroneInformation().getCardinalDirection())
-                .cartesianCoordinateCmd(cartesianCoordinateCmd)
-                .build();
-    }
-
     private void buildDeliveryOrders(Set<DeliveryOrderCmd> deliveryOrdersCmds) {
-        this.deliveryOrders = RoutesPlanningToDroneManagerCmd.toDeliveryOrdersModels(deliveryOrdersCmds);
-    }
-
-    private void buildDroneInformation(int droneId) {
-
-        DroneInformation droneInformation = DroneInformation.builder()
-                .droneId(droneId)
-                .droneStatus(DroneStatus.AVAILABLE)
-                .cartesianCoordinate(new CardinalPoint())
-                .cardinalDirection(CardinalDirection.NORTE)
-                .build();
-
-        this.drone.setDroneInformation(droneInformation);
+        this.deliveryOrders = DeliveryOrderCmd.toModels(deliveryOrdersCmds);
     }
 
     private void buildDrone(int droneId) {
@@ -196,30 +161,32 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
                 .build();
     }
 
-    private void buildRoute(int routeId, Set<RoutesPlanningToDroneManagerCmd.DeliveryOrderCmd.RouteCoordinatesCmd> routesCoordinates) {
+    private void buildRoute(int routeId, Set<CardinalPointWithDirectionCmd> routesCoordinatesCmds) {
         this.route = Route.builder()
                 .routeId(routeId)
                 .drone(this.drone)
                 .deliveryOrders(this.deliveryOrders)
-                .cardinalPoints(RouteCoordinatesCmd.toModels(routesCoordinates))
+                .cardinalPoints(routesCoordinatesCmds.stream()
+                        .map(cardinalPointWithDirectionCmd -> CardinalPointCmd.toModel(cardinalPointWithDirectionCmd.getCardinalPointCmd()))
+                        .collect(Collectors.toSet()))
                 .routeStatus(RouteStatus.WAITING)
                 .build();
     }
 
-    private void coordinateDroneMovements(DroneDto droneActuatorToDroneManagerSyncDroneDto) {
+    private void coordinateDroneMovements(DroneDto droneDto) {
         if (Objects.nonNull(this.route)) {
 
             Optional<DeliveryOrder> deliveryOrderOptional =
-                    findOrderById(droneActuatorToDroneManagerSyncDroneDto.getDroneDto().getActualDeliveryOrderDto().getId());
+                    findOrderById(droneDto.getDroneDto().getActualDeliveryOrderDto().getId());
 
             deliveryOrderOptional.ifPresent(actualDeliveryOrder -> {
-                DeliveryOrderDto actualDeliveryOrderDto = droneActuatorToDroneManagerSyncDroneDto.getDroneDto().getActualDeliveryOrderDto();
+                DeliveryOrderDto actualDeliveryOrderDto = droneDto.getDroneDto().getActualDeliveryOrderDto();
 
                 if (actualDeliveryOrderDto.getDeliveryOrderStatus().equals(DeliveryOrderStatus.UNDELIVERED)) {
-                    moveInUndeliveredOrder(droneActuatorToDroneManagerSyncDroneDto, this.route, actualDeliveryOrder);
+                    moveInUndeliveredOrder(droneDto, this.route, actualDeliveryOrder);
                 }
 
-                moveToTheNextDeliveryOrder(droneActuatorToDroneManagerSyncDroneDto, actualDeliveryOrderDto);
+                moveToTheNextDeliveryOrder(droneDto, actualDeliveryOrderDto);
 
                 this.droneInformationCmd.setNewDeliveryOrderCmd(null);
             });
@@ -291,7 +258,7 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
                         buildNewDroneInformationToActualOrder(droneActuatorToDroneManagerSyncDroneDto.getId(),
                                 Optional.of(actualDeliveryOrder), nextDirectionAndCoordinates.getCartesianDirection(), Boolean.FALSE);
 
-                if (nextDirectionAndCoordinates.getCardinalPoint().equals(deliveryCoordinate)) {
+                if (nextDirectionAndCoordinates.getCardinalPointCmd().equals(deliveryCoordinate)) {
                     newActualDroneInformation =
                             buildNewDroneInformationToActualOrder(droneActuatorToDroneManagerSyncDroneDto.getId(),
                                     Optional.of(actualDeliveryOrder), nextDirectionAndCoordinates.getCartesianDirection(), Boolean.TRUE);
@@ -302,7 +269,7 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
                 Drone drone = Drone.builder()
                         .droneInformation(newActualDroneInformation)
                         .build();
-                moveDroneInDroneActuator(drone);
+                moveCallChild(drone, droneInformation.getShouldDeliverOrder(), cardinalPointWithDirection);
             });
         });
     }

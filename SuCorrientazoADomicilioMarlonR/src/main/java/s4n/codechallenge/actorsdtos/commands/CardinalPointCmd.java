@@ -37,6 +37,19 @@ public class CardinalPointCmd {
                 .collect(Collectors.toSet());
     }
 
+    public static CardinalPoint toModel(CardinalPointCmd cardinalPointCmd) {
+        return CardinalPoint.builder()
+                .xAxe(cardinalPointCmd.getXAxe())
+                .xAxe(cardinalPointCmd.getYAxe())
+                .build();
+    }
+
+    public static Set<CardinalPoint> toModels(Set<CardinalPointCmd> cardinalPointCmds) {
+        return cardinalPointCmds.stream()
+                .map(CardinalPointCmd::toModel)
+                .collect(Collectors.toSet());
+    }
+
     @Override
     public String toString() {
         return "(" + xAxe + ", " + yAxe +')';

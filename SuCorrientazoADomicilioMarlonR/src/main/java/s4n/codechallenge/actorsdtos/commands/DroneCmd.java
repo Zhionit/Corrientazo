@@ -18,4 +18,10 @@ public class DroneCmd {
                 .id(droneCmd.getDroneId())
                 .build();
     }
+
+    public static DroneCmd toCmd(Drone drone) {
+        return DroneCmd.builder()
+                .droneId(drone.getId())
+                .build();
+    }
 }

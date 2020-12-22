@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class CardinalPointWithDirectionCmd {
     private CartesianDirection cartesianDirection;
-    private CardinalPointCmd cardinalPoint;
+    private CardinalPointCmd cardinalPointCmd;
 
     public static CardinalPointWithDirectionCmd toCmd(CardinalPointWithDirection cardinalPointWithDirection) {
         return CardinalPointWithDirectionCmd.builder()
-                .cardinalPoint(CardinalPointCmd.toCmd(cardinalPointWithDirection.getCardinalPoint()))
+                .cardinalPointCmd(CardinalPointCmd.toCmd(cardinalPointWithDirection.getCardinalPoint()))
                 .cartesianDirection(cardinalPointWithDirection.getCartesianDirection())
                 .build();
     }

@@ -26,15 +26,15 @@ public class ValueAndCoordinateCmd {
 
         return CardinalPointWithDirectionCmd.builder()
                 .cartesianDirection(valueAndCoordinateCmd.getDirection())
-                .cardinalPoint(cardinalPoint)
+                .cardinalPointCmd(cardinalPoint)
                 .build();
     }
 
     public static ValueAndCoordinateCmd toCmd(CardinalPointWithDirectionCmd cardinalPointWithDirectionCmd) {
         return ValueAndCoordinateCmd.builder()
                 .direction(cardinalPointWithDirectionCmd.getCartesianDirection())
-                .x(cardinalPointWithDirectionCmd.getCardinalPoint().getXAxe())
-                .y(cardinalPointWithDirectionCmd.getCardinalPoint().getYAxe())
+                .x(cardinalPointWithDirectionCmd.getCardinalPointCmd().getXAxe())
+                .y(cardinalPointWithDirectionCmd.getCardinalPointCmd().getYAxe())
                 .build();
     }
 

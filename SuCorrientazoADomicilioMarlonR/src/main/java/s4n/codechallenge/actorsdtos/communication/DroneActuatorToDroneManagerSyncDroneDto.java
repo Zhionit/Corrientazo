@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.Getter;
 import lombok.Builder;
 
+import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorMoveCmd.MoveDroneCmd;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.dtos.DroneDto;
 
@@ -15,5 +16,6 @@ import s4n.codechallenge.actorsdtos.dtos.DroneDto;
 @Builder
 @AllArgsConstructor
 public class DroneActuatorToDroneManagerSyncDroneDto implements DroneManagerDtoCmd {
+    private MoveDroneCmd
     private DroneDto droneDto;
 }
