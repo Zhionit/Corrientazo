@@ -1,9 +1,11 @@
 package s4n.codechallenge.actorsdtos.communication;
 
+import akka.actor.typed.ActorRef;
 import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
+import s4n.codechallenge.actorsdtos.FilesManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.RoutePlanningDtoCmd;
 
 import java.util.List;
@@ -15,4 +17,5 @@ import java.util.List;
 public class FileManagerToRoutePlanningCmd implements RoutePlanningDtoCmd{
     private List<String> encodedOrders;
     private String fileName;
+    private ActorRef<FilesManagerDtoCmd> replyTo;
 }

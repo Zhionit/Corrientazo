@@ -7,15 +7,14 @@ import lombok.Getter;
 import lombok.Setter;
 import s4n.codechallenge.actorsdtos.DroneActuatorDtoCmd;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
-import s4n.codechallenge.actorsdtos.commands.DroneInformationCmd;
+import s4n.codechallenge.actorsdtos.commands.DroneCmd;
 
 @Generated
 @Getter
 @Setter
 @Builder
 public class DroneManagerToDroneActuatorMoveDroneCmd implements DroneActuatorDtoCmd {
-    private byte droneId;
-    private DroneInformationCmd droneInformationCmd;
+    private DroneCmd droneCmd;
     private Boolean shouldDeliverOrder;
     private ActorRef<DroneManagerDtoCmd> replyTo;
 }

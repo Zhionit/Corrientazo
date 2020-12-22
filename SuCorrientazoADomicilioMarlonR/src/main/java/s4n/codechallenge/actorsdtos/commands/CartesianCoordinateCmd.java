@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
-import s4n.codechallenge.entities.CartesianCoordinate;
+import s4n.codechallenge.entities.CardinalPoint;
 
 @Generated
 @Getter
@@ -14,15 +14,15 @@ public class CartesianCoordinateCmd {
     private int xAxe;
     private int yAxe;
 
-    public static CartesianCoordinateCmd toCmd(CartesianCoordinate cartesianCoordinate) {
+    public static CartesianCoordinateCmd toCmd(CardinalPoint cardinalPoint) {
         return CartesianCoordinateCmd.builder()
-                .xAxe(cartesianCoordinate.getXAxe())
-                .yAxe(cartesianCoordinate.getYAxe())
+                .xAxe(cardinalPoint.getXAxe())
+                .yAxe(cardinalPoint.getYAxe())
                 .build();
     }
 
-    public static CartesianCoordinate toModel(CartesianCoordinateCmd cartesianCoordinateCmd) {
-        return CartesianCoordinate.builder()
+    public static CardinalPoint toModel(CartesianCoordinateCmd cartesianCoordinateCmd) {
+        return CardinalPoint.builder()
                 .xAxe(cartesianCoordinateCmd.getXAxe())
                 .yAxe(cartesianCoordinateCmd.getYAxe())
                 .build();

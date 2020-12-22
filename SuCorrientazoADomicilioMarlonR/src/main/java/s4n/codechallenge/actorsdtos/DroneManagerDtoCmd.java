@@ -1,4 +1,4 @@
 package s4n.codechallenge.actorsdtos;
 
-public interface DroneManagerDtoCmd {
+public interface DroneManagerDtoCmd extends GeneralActuatorDtoCmd {
 }

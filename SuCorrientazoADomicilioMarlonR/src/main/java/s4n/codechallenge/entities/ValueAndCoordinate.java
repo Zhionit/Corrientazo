@@ -13,5 +13,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ValueAndCoordinate {
     private String name;
-    private CartesianCoordinate cartesianCoordinate;
+    private CardinalPoint cardinalPoint;
 }

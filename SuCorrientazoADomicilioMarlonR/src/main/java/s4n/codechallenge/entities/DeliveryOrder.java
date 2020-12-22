@@ -13,13 +13,12 @@ import s4n.codechallenge.enums.DeliveryOrderStatus;
 @Builder
 @AllArgsConstructor
 public class DeliveryOrder {
-    private byte id;
+    private int id;
+    private CardinalPoint cardinalPoint;
     private DeliveryOrderStatus deliveryOrderStatus;
-    private CartesianCoordinate cartesianCoordinateOfDestination;
-    private DeliveryOrder nextDeliveryOrder;
 
-    public DeliveryOrder(CartesianCoordinate cartesianCoordinateOfDestination) {
+    public DeliveryOrder(CardinalPoint cardinalPoint) {
         this.deliveryOrderStatus = DeliveryOrderStatus.UNDELIVERED;
-        this.cartesianCoordinateOfDestination = cartesianCoordinateOfDestination;
+        this.cardinalPoint = cardinalPoint;
     }
 }

@@ -7,9 +7,9 @@ import lombok.Getter;
 @Generated
 @Getter
 @AllArgsConstructor
-public enum CoordinatesDirection {
+public enum CartesianDirection {
     
-    Y("y"),X("x"),NY("-y"),NX("-x");
+    Y("y"), X("x"), NY("-y"), NX("-x");
     
     private String value;
 }

@@ -17,19 +17,19 @@ public class DroneInformationDto {
 
     private DeliveryOrderDto actualDeliveryOrderDto;
     private CardinalDirection cardinalDirection;
-    private CartesianCoordinateDto cartesianCoordinateDto;
+    private CardinalPointDto cardinalPointDto;
 
     public DroneInformationDto() {
         this.cardinalDirection = CardinalDirection.NORTE;
-        this.cartesianCoordinateDto = new CartesianCoordinateDto();
-        this.actualDeliveryOrderDto = new DeliveryOrderDto(new CartesianCoordinateDto());
+        this.cardinalPointDto = new CardinalPointDto();
+        this.actualDeliveryOrderDto = new DeliveryOrderDto(new CardinalPointDto());
     }
 
     public static DroneInformationDto toDto(DroneInformation droneInformation) {
         return DroneInformationDto.builder()
                 .actualDeliveryOrderDto(droneInformation.getDeliveryOrder().isPresent() ? DeliveryOrderDto.toDto(droneInformation.getDeliveryOrder().get()) : null)
                 .cardinalDirection(droneInformation.getCardinalDirection())
-                .cartesianCoordinateDto(CartesianCoordinateDto.toDto(droneInformation.getCartesianCoordinate()))
+                .cardinalPointDto(CardinalPointDto.toDto(droneInformation.getCartesianCoordinate()))
                 .build();
     }
 }

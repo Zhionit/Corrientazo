@@ -17,21 +17,21 @@ import java.util.stream.Collectors;
 @Builder
 @AllArgsConstructor
 public class DeliveryOrderDto {
-    private byte id;
+    private int id;
     private DeliveryOrderStatus deliveryOrderStatus;
-    private CartesianCoordinateDto cartesianCoordinateDtoOfDestinationDto;
+    private CardinalPointDto cardinalPointDtoOfDestinationDto;
 
-    public DeliveryOrderDto(CartesianCoordinateDto cartesianCoordinateDtoOfDestinationDto) {
+    public DeliveryOrderDto(CardinalPointDto cardinalPointDtoOfDestinationDto) {
         this.id = 0;
         this.deliveryOrderStatus = DeliveryOrderStatus.UNDELIVERED;
-        this.cartesianCoordinateDtoOfDestinationDto = cartesianCoordinateDtoOfDestinationDto;
+        this.cardinalPointDtoOfDestinationDto = cardinalPointDtoOfDestinationDto;
     }
 
     public static DeliveryOrderDto toDto(DeliveryOrder deliveryOrder) {
         return DeliveryOrderDto.builder()
                 .id(deliveryOrder.getId())
                 .deliveryOrderStatus(deliveryOrder.getDeliveryOrderStatus())
-                .cartesianCoordinateDtoOfDestinationDto(CartesianCoordinateDto.toDto(deliveryOrder.getCartesianCoordinateOfDestination()))
+                .cardinalPointDtoOfDestinationDto(CardinalPointDto.toDto(deliveryOrder.getCardinalPoint()))
                 .build();
     }
 

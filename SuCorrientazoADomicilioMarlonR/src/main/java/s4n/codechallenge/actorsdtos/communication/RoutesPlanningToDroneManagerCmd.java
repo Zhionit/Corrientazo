@@ -7,20 +7,13 @@ import lombok.Getter;
 import lombok.Setter;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.RoutePlanningDtoCmd;
-import s4n.codechallenge.actorsdtos.commands.DeliveryOrderCmd;
-import s4n.codechallenge.actorsdtos.commands.DroneCmd;
-import s4n.codechallenge.actorsdtos.commands.RouteCoordinatesCmd;
-
-import java.util.List;
+import s4n.codechallenge.actorsdtos.commands.RouteCmd;
 
 @Generated
 @Getter
 @Setter
 @Builder
 public class RoutesPlanningToDroneManagerCmd implements DroneManagerDtoCmd {
-    private final byte routeId;
-    private final DroneCmd droneCmd;
-    private final List<DeliveryOrderCmd> linearListOfDeliveryOrdersCmd;
-    private final List<RouteCoordinatesCmd> routesCoordinates;
+    private final RouteCmd routeCmd;
     private final ActorRef<RoutePlanningDtoCmd> replyTo;
 }

@@ -10,5 +10,5 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class DroneDto {
-    private byte droneId;
+    private int droneId;
 }

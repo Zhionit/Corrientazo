@@ -12,7 +12,7 @@ import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorSyn
 import s4n.codechallenge.actorsdtos.communication.DroneActuatorToDroneManagerMoveDroneDto;
 import s4n.codechallenge.actorsdtos.communication.DroneActuatorToDroneManagerSyncDroneDto;
 import s4n.codechallenge.actorsdtos.dtos.DroneInformationDto;
-import s4n.codechallenge.entities.CartesianCoordinate;
+import s4n.codechallenge.entities.CardinalPoint;
 import s4n.codechallenge.entities.Drone;
 import s4n.codechallenge.entities.DroneInformation;
 import s4n.codechallenge.enums.DroneStatus;
@@ -44,8 +44,8 @@ public class DroneActuatorImpl extends AbstractBehavior<DroneActuatorDtoCmd> imp
     }
 
     private Behavior<DroneActuatorDtoCmd> syncDrone(DroneManagerToDroneActuatorSyncCmd droneManagerToDroneActuatorSyncCmd) {
-        getContext().getLog().info("Syncing {} drone status", droneManagerToDroneActuatorSyncCmd.getDroneId());
-        Optional<Drone> droneOptional = findDrone(droneManagerToDroneActuatorSyncCmd.getDroneId());
+        getContext().getLog().info("Syncing {} drone status", droneManagerToDroneActuatorSyncCmd.getDroneCmd());
+        Optional<Drone> droneOptional = findDrone(droneManagerToDroneActuatorSyncCmd.getDroneCmd());
 
         droneOptional.ifPresent(drone -> droneManagerToDroneActuatorSyncCmd.getReplyTo().tell(DroneActuatorToDroneManagerSyncDroneDto.toDto(drone)));
         return this;
@@ -64,15 +64,15 @@ public class DroneActuatorImpl extends AbstractBehavior<DroneActuatorDtoCmd> imp
         Optional<Drone> droneOptional = findDrone(droneManagerToDroneActuatorMoveDroneCmd.getDroneId());
         droneOptional.ifPresent(drone -> {
 
-            CartesianCoordinate cartesianCoordinate = CartesianCoordinate.builder()
-                    .xAxe(droneManagerToDroneActuatorMoveDroneCmd.getDroneInformationCmd().getCartesianCoordinateCmd().getXAxe())
-                    .yAxe(droneManagerToDroneActuatorMoveDroneCmd.getDroneInformationCmd().getCartesianCoordinateCmd().getYAxe())
+            CardinalPoint cardinalPoint = CardinalPoint.builder()
+                    .xAxe(droneManagerToDroneActuatorMoveDroneCmd.getDroneCmd().getCartesianCoordinateCmd().getXAxe())
+                    .yAxe(droneManagerToDroneActuatorMoveDroneCmd.getDroneCmd().getCartesianCoordinateCmd().getYAxe())
                     .build();
 
             DroneInformation droneInformation = DroneInformation.builder()
-                    .cardinalDirection(droneManagerToDroneActuatorMoveDroneCmd.getDroneInformationCmd().getCardinalDirection())
+                    .cardinalDirection(droneManagerToDroneActuatorMoveDroneCmd.getDroneCmd().getCardinalDirection())
                     .droneStatus(DroneStatus.BUSY)
-                    .cartesianCoordinate(cartesianCoordinate)
+                    .cartesianCoordinate(cardinalPoint)
                     .build();
             droneInformation.setDroneStatus(DroneStatus.BUSY);
 

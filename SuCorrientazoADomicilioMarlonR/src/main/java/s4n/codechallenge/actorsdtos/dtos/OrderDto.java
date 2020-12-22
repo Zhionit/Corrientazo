@@ -11,7 +11,7 @@ import s4n.codechallenge.enums.CardinalDirection;
 @Setter
 @Builder
 public class OrderDto {
-    private byte orderId;
-    private CartesianCoordinateDto finalCartesianCoordinateDto;
+    private int orderId;
+    private CardinalPointDto finalCardinalPointDto;
     private CardinalDirection finalCardinalDirectionDto;
 }

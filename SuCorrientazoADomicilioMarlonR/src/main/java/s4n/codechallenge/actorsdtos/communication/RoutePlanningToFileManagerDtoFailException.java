@@ -1,15 +1,17 @@
 package s4n.codechallenge.actorsdtos.communication;
 
-import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
+import s4n.codechallenge.actorsdtos.FilesManagerDtoCmd;
 
 @Generated
 @Getter
 @Setter
-@Builder
-public class RoutePlanningToFileManagerDtoFailException implements RoutesPlanningToFileManagerDto{
+public class RoutePlanningToFileManagerDtoFailException extends RoutesPlanningToFileManagerDto implements FilesManagerDtoCmd {
     private String errorMessage;
-    private byte droneId;
+
+    public RoutePlanningToFileManagerDtoFailException() {
+        super();
+    }
 }

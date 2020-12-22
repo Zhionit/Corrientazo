@@ -17,9 +17,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class Route {
-    private final byte routeId;
-    private final Drone drone;
-    private final List<DeliveryOrder> deliveryOrders;
-    private final List<RouteCoordinates> routeCoordinates;
+    private int routeId;
+    private Drone drone;
+    private List<DeliveryOrder> deliveryOrders;
+    private List<CardinalPoint> cardinalPoints;
     private RouteStatus routeStatus;
 }

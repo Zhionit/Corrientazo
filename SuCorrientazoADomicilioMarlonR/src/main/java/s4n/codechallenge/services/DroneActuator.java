@@ -1,4 +1,4 @@
 package s4n.codechallenge.services;
 
-public interface DroneActuator {
+public interface DroneActuator extends MainActuator {
 }
