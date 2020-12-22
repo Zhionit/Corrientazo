@@ -5,7 +5,6 @@ import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 import s4n.codechallenge.entities.CardinalPoint;
-import s4n.codechallenge.entities.ValueAndCoordinate;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,27 +18,27 @@ public class ValueAndCoordinateCmd {
     private int x;
     private int y;
 
-    public static ValueAndCoordinate toModel(ValueAndCoordinateCmd valueAndCoordinateCmd) {
+    public static CardinalPointWithDirectionCmd toModel(ValueAndCoordinateCmd valueAndCoordinateCmd) {
         CardinalPoint cardinalPoint = CardinalPoint.builder()
                 .xAxe(valueAndCoordinateCmd.getX())
                 .yAxe(valueAndCoordinateCmd.getY())
                 .build();
 
-        return ValueAndCoordinate.builder()
-                .name(valueAndCoordinateCmd.getDirection())
+        return CardinalPointWithDirectionCmd.builder()
+                .cartesianDirection(valueAndCoordinateCmd.getDirection())
                 .cardinalPoint(cardinalPoint)
                 .build();
     }
 
-    public static ValueAndCoordinateCmd toCmd(ValueAndCoordinate valueAndCoordinate) {
+    public static ValueAndCoordinateCmd toCmd(CardinalPointWithDirectionCmd cardinalPointWithDirectionCmd) {
         return ValueAndCoordinateCmd.builder()
-                .direction(valueAndCoordinate.getName())
-                .x(valueAndCoordinate.getCardinalPoint().getXAxe())
-                .y(valueAndCoordinate.getCardinalPoint().getYAxe())
+                .direction(cardinalPointWithDirectionCmd.getCartesianDirection())
+                .x(cardinalPointWithDirectionCmd.getCardinalPoint().getXAxe())
+                .y(cardinalPointWithDirectionCmd.getCardinalPoint().getYAxe())
                 .build();
     }
 
-    public static Set<ValueAndCoordinateCmd> toCmds(Set<ValueAndCoordinate> cartesianCoordinatesOfRoute) {
+    public static Set<ValueAndCoordinateCmd> toCmds(Set<CardinalPointWithDirectionCmd> cartesianCoordinatesOfRoute) {
         return cartesianCoordinatesOfRoute.stream()
                 .map(ValueAndCoordinateCmd::toCmd)
                 .collect(Collectors.toSet());

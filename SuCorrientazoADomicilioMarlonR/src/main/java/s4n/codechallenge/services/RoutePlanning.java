@@ -2,18 +2,27 @@ package s4n.codechallenge.services;
 
 import akka.actor.typed.Behavior;
 import s4n.codechallenge.actorsdtos.RoutePlanningDtoCmd;
+import s4n.codechallenge.actorsdtos.communication.DroneManagerToRoutePlanningContainerDto;
 import s4n.codechallenge.actorsdtos.communication.FileManagerToRoutePlanningCmd;
+import s4n.codechallenge.actorsdtos.communication.RoutesPlanningToFileManagerDto;
+import s4n.codechallenge.entities.CardinalPointWithDirection;
+import s4n.codechallenge.entities.DeliveryOrder;
 import s4n.codechallenge.entities.RoutePlanningIndexes;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public interface RoutePlanning extends MainActuator {
-
-    Behavior<RoutePlanningDtoCmd> extractDrone(FileManagerToRoutePlanningCmd fileManagerToRoutePlanningCmd);
+public interface RoutePlanning {
 
     void validateDrone(byte amountsOrders, int ordersAmount);
 
-    void generateDroneRoute(List<String> encodedOrders, RoutePlanningIndexes routePlanningIndexes);
+    void generateDroneRoute(Set<String> encodedOrders, RoutePlanningIndexes routePlanningIndexes);
 
-    void sendInformationToDroneManager();
+    Behavior<RoutePlanningDtoCmd> listenParentCall(FileManagerToRoutePlanningCmd fileManagerToRoutePlanningCmd);
+
+    Behavior<RoutePlanningDtoCmd> respondToParentActuator(RoutesPlanningToFileManagerDto routesPlanningToFileManagerDto);
+
+    Behavior<RoutePlanningDtoCmd> listenChildCall(DroneManagerToRoutePlanningContainerDto droneManagerToRoutePlanningContainerDto);
+
+    void callChild(Map<DeliveryOrder, Set<CardinalPointWithDirection>> cardinalPoints, Map<DeliveryOrder, CardinalPointWithDirection> deliveryPoints);
 }

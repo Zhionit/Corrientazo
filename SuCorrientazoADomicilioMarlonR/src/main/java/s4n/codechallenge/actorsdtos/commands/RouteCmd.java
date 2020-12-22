@@ -6,7 +6,7 @@ import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.Set;
 
 @Generated
 @Getter
@@ -16,6 +16,6 @@ import java.util.List;
 public class RouteCmd {
     private int routeId;
     private DroneCmd drone;
-    private List<DeliveryOrderCmd> deliveryOrdersCmds;
-    private List<CardinalPointCmd> cardinalPointCmds;
+    private Set<DeliveryOrderCmd> deliveryOrdersCmds;
+    private Set<CardinalPointWithDirectionCmd> cardinalPointCmds;
 }

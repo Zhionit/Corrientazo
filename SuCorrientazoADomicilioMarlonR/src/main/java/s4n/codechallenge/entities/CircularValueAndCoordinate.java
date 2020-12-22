@@ -11,6 +11,6 @@ import lombok.Setter;
 @Builder
 public class CircularValueAndCoordinate {
     private CircularValueAndCoordinate before;
-    private ValueAndCoordinate same;
+    private CardinalPointWithDirection same;
     private CircularValueAndCoordinate next;
 }

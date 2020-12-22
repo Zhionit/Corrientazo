@@ -14,7 +14,7 @@ import s4n.codechallenge.actorsdtos.DroneActuatorDtoCmd;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.RoutePlanningDtoCmd;
 import s4n.codechallenge.actorsdtos.commands.CartesianCoordinateCmd;
-import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorMoveDroneCmd;
+import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorMoveCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorSyncCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToRoutePlanningContainerDto;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToRoutePlanningDto;
@@ -33,7 +33,7 @@ import s4n.codechallenge.entities.DeliveryOrder;
 import s4n.codechallenge.entities.Drone;
 import s4n.codechallenge.entities.Route;
 import s4n.codechallenge.entities.RouteCoordinates;
-import s4n.codechallenge.entities.ValueAndCoordinate;
+import s4n.codechallenge.actorsdtos.commands.CardinalPointWithDirectionCmd;
 import s4n.codechallenge.enums.CardinalDirection;
 import s4n.codechallenge.enums.DeliveryOrderStatus;
 import s4n.codechallenge.enums.DroneStatus;
@@ -69,16 +69,6 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
     }
 
     @Override
-    public void droneSync(DroneActuatorToDroneManagerSyncDroneDto droneManagerDtoCmd) {
-
-    }
-
-    @Override
-    public void deliverOrders() {
-
-    }
-
-    @Override
     public void  moveDroneInDroneActuator(Drone drone) {
 
         DroneInformation droneInformation = drone.getDroneInformation();
@@ -89,27 +79,34 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
                 .cardinalDirection(droneInformation.getCardinalDirection())
                 .build();
 
-        DroneManagerToDroneActuatorMoveDroneCmd droneManagerToDroneActuatorMoveDroneCmd = DroneManagerToDroneActuatorMoveDroneCmd.builder()
+        DroneManagerToDroneActuatorMoveCmd droneManagerToDroneActuatorMoveCmd = DroneManagerToDroneActuatorMoveCmd.builder()
                 .droneId(drone.getId())
                 .droneInformationCmd(nextDroneInformationDto)
                 .shouldDeliverOrder(droneInformation.getShouldDeliverOrder())
                 .build();
 
-        droneActuatorActorRef.tell(droneManagerToDroneActuatorMoveDroneCmd);
+        droneActuatorActorRef.tell(droneManagerToDroneActuatorMoveCmd);
     }
+
 
     @Override
     public Receive<DroneManagerDtoCmd> createReceive() {
         ReceiveBuilder<DroneManagerDtoCmd> builder = newReceiveBuilder();
 
-        builder.onMessage(RoutesPlanningToDroneManagerCmd.class, this::processDroneRoutes);
-        builder.onMessage(DroneActuatorToDroneManagerSyncDroneDto.class, this::droneSyncBehavior);
-        builder.onMessage(DroneActuatorToDroneManagerMoveDroneDto.class, this::moveDroneBehavior);
+        builder.onMessage(RoutesPlanningToDroneManagerCmd.class, this::listenParentCall);
+        builder.onMessage(DroneActuatorToDroneManagerSyncDroneDto.class, this::syncListenChildCall);
+        builder.onMessage(DroneActuatorToDroneManagerMoveDroneDto.class, this::moveListenChildCall);
 
         return builder.build();
     }
 
-    private Behavior<DroneManagerDtoCmd> processDroneRoutes(RoutesPlanningToDroneManagerCmd routesPlanningToDroneManagerCmd) {
+    @Override
+    public Behavior<DroneManagerDtoCmd> respondToParentActuator(DroneManagerToRoutePlanningContainerDto droneManagerToRoutePlanningContainerDto) {
+        return null;
+    }
+
+    @Override
+    public Behavior<DroneManagerDtoCmd> listenParentCall(RoutesPlanningToDroneManagerCmd routesPlanningToDroneManagerCmd) {
 
         buildDrone(routesPlanningToDroneManagerCmd.getRouteCmd().getDrone().getDroneId());
         this.routesPlanningToDroneManagerCmd = routesPlanningToDroneManagerCmd;
@@ -127,6 +124,32 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
                 this.deliveryOrders, getContext().getSelf());
         droneActuatorActorRef.tell(droneActuator);
 
+        return this;
+    }
+
+    @Override
+    public Behavior<DroneManagerDtoCmd> syncCallChild(DroneManagerToDroneActuatorSyncCmd droneManagerToDroneActuatorSyncCmd) {
+        return null;
+    }
+
+    @Override
+    public Behavior<DroneManagerDtoCmd> moveCallChild(DroneManagerToDroneActuatorMoveCmd droneManagerToDroneActuatorMoveCmd) {
+        return null;
+    }
+
+    @Override
+    public Behavior<DroneManagerDtoCmd> syncListenChildCall(DroneActuatorToDroneManagerSyncDroneDto droneManagerDtoCmd) {
+
+        coordinateDroneMovements(droneManagerDtoCmd.getDroneDto());
+        moveDroneInDroneActuator(this.drone);
+
+        return this;
+    }
+
+    @Override
+    public Behavior<DroneManagerDtoCmd> moveListenChildCall(DroneActuatorToDroneManagerMoveDroneDto droneActuatorToDroneManagerMoveDroneDto) {
+
+        moveDroneInDroneActuator(this.drone);
         return this;
     }
 
@@ -183,20 +206,7 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
                 .build();
     }
 
-    private Behavior<DroneManagerDtoCmd> droneSyncBehavior(DroneActuatorToDroneManagerSyncDroneDto droneActuatorToDroneManagerSyncDroneDto) {
-        coordinateDroneMovements(droneActuatorToDroneManagerSyncDroneDto);
-        moveDroneInDroneActuator(this.drone);
-
-        return this;
-    }
-
-    private Behavior<DroneManagerDtoCmd> moveDroneBehavior(DroneActuatorToDroneManagerMoveDroneDto droneActuatorToDroneManagerMoveDroneDto) {
-        moveDroneInDroneActuator(this.drone);
-
-        return this;
-    }
-
-    private void coordinateDroneMovements(DroneActuatorToDroneManagerSyncDroneDto droneActuatorToDroneManagerSyncDroneDto) {
+    private void coordinateDroneMovements(DroneDto droneActuatorToDroneManagerSyncDroneDto) {
         if (Objects.nonNull(this.route)) {
 
             Optional<DeliveryOrder> deliveryOrderOptional =
@@ -273,18 +283,18 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
 
         actualCoordinateInRout.ifPresent(routeCoordinates -> {
 
-            Optional<ValueAndCoordinate> directionAndCoordinatesOptional = routeCoordinates.getNextOptional();
+            Optional<CardinalPointWithDirectionCmd> directionAndCoordinatesOptional = routeCoordinates.getNextOptional();
 
             directionAndCoordinatesOptional.ifPresent(nextDirectionAndCoordinates -> {
 
                 DroneInformation newActualDroneInformation =
                         buildNewDroneInformationToActualOrder(droneActuatorToDroneManagerSyncDroneDto.getId(),
-                                Optional.of(actualDeliveryOrder), nextDirectionAndCoordinates.getName(), Boolean.FALSE);
+                                Optional.of(actualDeliveryOrder), nextDirectionAndCoordinates.getCartesianDirection(), Boolean.FALSE);
 
                 if (nextDirectionAndCoordinates.getCardinalPoint().equals(deliveryCoordinate)) {
                     newActualDroneInformation =
                             buildNewDroneInformationToActualOrder(droneActuatorToDroneManagerSyncDroneDto.getId(),
-                                    Optional.of(actualDeliveryOrder), nextDirectionAndCoordinates.getName(), Boolean.TRUE);
+                                    Optional.of(actualDeliveryOrder), nextDirectionAndCoordinates.getCartesianDirection(), Boolean.TRUE);
 
                     addFinalOrderStatus(newActualDroneInformation);
                 }

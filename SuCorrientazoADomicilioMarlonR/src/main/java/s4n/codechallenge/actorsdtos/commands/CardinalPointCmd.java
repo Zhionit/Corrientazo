@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import s4n.codechallenge.entities.CardinalPoint;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Generated
 @Setter
 @Getter
@@ -26,6 +29,12 @@ public class CardinalPointCmd {
                 .xAxe(cardinalPoint.getXAxe())
                 .yAxe(cardinalPoint.getYAxe())
                 .build();
+    }
+
+    public static Set<CardinalPointCmd> toCmds(Set<CardinalPoint> cardinalPoints) {
+        return cardinalPoints.stream()
+                .map(CardinalPointCmd::toCmd)
+                .collect(Collectors.toSet());
     }
 
     @Override

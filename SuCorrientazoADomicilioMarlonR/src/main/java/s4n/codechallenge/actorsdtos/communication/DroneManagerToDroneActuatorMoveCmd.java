@@ -13,7 +13,7 @@ import s4n.codechallenge.actorsdtos.commands.DroneCmd;
 @Getter
 @Setter
 @Builder
-public class DroneManagerToDroneActuatorMoveDroneCmd implements DroneActuatorDtoCmd {
+public class DroneManagerToDroneActuatorMoveCmd implements DroneActuatorDtoCmd {
     private DroneCmd droneCmd;
     private Boolean shouldDeliverOrder;
     private ActorRef<DroneManagerDtoCmd> replyTo;

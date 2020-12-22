@@ -7,7 +7,7 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 import s4n.codechallenge.actorsdtos.DroneActuatorDtoCmd;
-import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorMoveDroneCmd;
+import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorMoveCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorSyncCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneActuatorToDroneManagerMoveDroneDto;
 import s4n.codechallenge.actorsdtos.communication.DroneActuatorToDroneManagerSyncDroneDto;
@@ -38,7 +38,7 @@ public class DroneActuatorImpl extends AbstractBehavior<DroneActuatorDtoCmd> imp
         ReceiveBuilder<DroneActuatorDtoCmd> builder = newReceiveBuilder();
 
         builder.onMessage(DroneManagerToDroneActuatorSyncCmd.class, this::syncDrone);
-        builder.onMessage(DroneManagerToDroneActuatorMoveDroneCmd.class, this::moveDroneInCartesianCoordinate);
+        builder.onMessage(DroneManagerToDroneActuatorMoveCmd.class, this::moveDroneInCartesianCoordinate);
 
         return builder.build();
     }
@@ -57,20 +57,20 @@ public class DroneActuatorImpl extends AbstractBehavior<DroneActuatorDtoCmd> imp
                 .findFirst();
     }
 
-    private Behavior<DroneActuatorDtoCmd> moveDroneInCartesianCoordinate(DroneManagerToDroneActuatorMoveDroneCmd droneManagerToDroneActuatorMoveDroneCmd) {
-        getContext().getLog().info("Moving {} drone", droneManagerToDroneActuatorMoveDroneCmd.getDroneId());
+    private Behavior<DroneActuatorDtoCmd> moveDroneInCartesianCoordinate(DroneManagerToDroneActuatorMoveCmd droneManagerToDroneActuatorMoveCmd) {
+        getContext().getLog().info("Moving {} drone", droneManagerToDroneActuatorMoveCmd.getDroneId());
         //TODO - Add cache if enough time, else simulate db connection with fake data
 
-        Optional<Drone> droneOptional = findDrone(droneManagerToDroneActuatorMoveDroneCmd.getDroneId());
+        Optional<Drone> droneOptional = findDrone(droneManagerToDroneActuatorMoveCmd.getDroneId());
         droneOptional.ifPresent(drone -> {
 
             CardinalPoint cardinalPoint = CardinalPoint.builder()
-                    .xAxe(droneManagerToDroneActuatorMoveDroneCmd.getDroneCmd().getCartesianCoordinateCmd().getXAxe())
-                    .yAxe(droneManagerToDroneActuatorMoveDroneCmd.getDroneCmd().getCartesianCoordinateCmd().getYAxe())
+                    .xAxe(droneManagerToDroneActuatorMoveCmd.getDroneCmd().getCartesianCoordinateCmd().getXAxe())
+                    .yAxe(droneManagerToDroneActuatorMoveCmd.getDroneCmd().getCartesianCoordinateCmd().getYAxe())
                     .build();
 
             DroneInformation droneInformation = DroneInformation.builder()
-                    .cardinalDirection(droneManagerToDroneActuatorMoveDroneCmd.getDroneCmd().getCardinalDirection())
+                    .cardinalDirection(droneManagerToDroneActuatorMoveCmd.getDroneCmd().getCardinalDirection())
                     .droneStatus(DroneStatus.BUSY)
                     .cartesianCoordinate(cardinalPoint)
                     .build();
@@ -81,7 +81,7 @@ public class DroneActuatorImpl extends AbstractBehavior<DroneActuatorDtoCmd> imp
             DroneInformationDto droneInformationDto = DroneInformationDto.toDto(droneInformation);
             DroneActuatorToDroneManagerMoveDroneDto moveDroneDto = new DroneActuatorToDroneManagerMoveDroneDto(drone.getId(), droneInformationDto);
 
-            droneManagerToDroneActuatorMoveDroneCmd.getReplyTo().tell(moveDroneDto);
+            droneManagerToDroneActuatorMoveCmd.getReplyTo().tell(moveDroneDto);
         });
 
         return this;

@@ -12,4 +12,9 @@ public enum CartesianDirection {
     Y("y"), X("x"), NY("-y"), NX("-x");
     
     private String value;
+
+    @Override
+    public String toString() {
+        return value;
+    }
 }

@@ -1,5 +1,6 @@
 package s4n.codechallenge.actorsdtos.commands;
 
+import com.sun.istack.internal.Nullable;
 import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
@@ -17,12 +18,13 @@ import java.util.stream.Collectors;
 @Builder
 public class DeliveryOrderCmd {
     private final int id;
-    private final CardinalPointCmd cardinalPointCmd;
+
+    private final CardinalPointWithDirectionCmd cardinalPointWithDirectionCmd;
 
     public static DeliveryOrder toModel(DeliveryOrderCmd deliveryOrderCmd) {
         CardinalPoint cardinalPointOfDestination = CardinalPoint.builder()
-                .yAxe(deliveryOrderCmd.cardinalPointCmd.getYAxe())
-                .xAxe(deliveryOrderCmd.cardinalPointCmd.getXAxe())
+                .xAxe(deliveryOrderCmd.cardinalPointWithDirectionCmd.getCardinalPoint().getXAxe())
+                .yAxe(deliveryOrderCmd.cardinalPointWithDirectionCmd.getCardinalPoint().getYAxe())
                 .build();
 
         return DeliveryOrder.builder()

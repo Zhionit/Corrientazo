@@ -15,8 +15,10 @@ import lombok.Setter;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.FilesManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.RoutePlanningDtoCmd;
+import s4n.codechallenge.actorsdtos.commands.CardinalPointCmd;
+import s4n.codechallenge.actorsdtos.commands.DeliveryOrderCmd;
 import s4n.codechallenge.actorsdtos.commands.DroneCmd;
-import s4n.codechallenge.actorsdtos.commands.ValueAndCoordinateCmd;
+import s4n.codechallenge.actorsdtos.commands.RouteCmd;
 import s4n.codechallenge.actorsdtos.communication.DroneManagerToRoutePlanningContainerDto;
 import s4n.codechallenge.actorsdtos.communication.FileManagerToRoutePlanningCmd;
 import s4n.codechallenge.actorsdtos.communication.RoutePlanningToFileManagerDtoFailException;
@@ -24,17 +26,17 @@ import s4n.codechallenge.actorsdtos.communication.RoutesPlanningToDroneManagerCm
 import s4n.codechallenge.actorsdtos.communication.RoutesPlanningToFileManagerDto;
 import s4n.codechallenge.actorsdtos.dtos.RoutesDto;
 import s4n.codechallenge.entities.CardinalPoint;
+import s4n.codechallenge.entities.CardinalPointWithDirection;
 import s4n.codechallenge.entities.CircularValueAndCoordinate;
 import s4n.codechallenge.entities.DeliveryOrder;
 import s4n.codechallenge.entities.RoutePlanningIndexes;
-import s4n.codechallenge.entities.ValueAndCoordinate;
+import s4n.codechallenge.actorsdtos.commands.CardinalPointWithDirectionCmd;
 import s4n.codechallenge.enums.CartesianDirection;
 import s4n.codechallenge.services.RoutePlanning;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,15 +45,15 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     private static final byte MAX_DRONES_ALLOWED = 20;
     private static final byte MAX_AMOUNT_ORDERS_ALLOWED = 3;
     public static final int MAX_CUADRAS_LENGTH = 10;
-    public static final int MAX_CUADRAS_LENGTH_NEGATIVE = -10;
 
+    public static final int MAX_CUADRAS_LENGTH_NEGATIVE = -10;
     private byte droneId;
     private CardinalPoint actualCardinalPoint;
     private CartesianDirection actualCartesianDirection;
-    private CircularValueAndCoordinate actualCircularListOfCoordinates;
 
-    private Map<DeliveryOrder, Set<ValueAndCoordinate>> deliveryOrdersMovements;
-    private Map<DeliveryOrder, ValueAndCoordinate> endOfEachOrder;
+    private CircularValueAndCoordinate actualCircularListOfCoordinates;
+    private Map<DeliveryOrder, Set<CardinalPointWithDirection>> deliveryOrdersMovements;
+    private Map<DeliveryOrder, CardinalPointWithDirection> endOfEachOrder;
 
     private ActorRef<FilesManagerDtoCmd> fatherRoutePlanningDtoCmdActorRef;
     private final ActorRef<DroneManagerDtoCmd> childDroneManagerDtoCmdActorRef;
@@ -72,14 +74,14 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     public Receive<RoutePlanningDtoCmd> createReceive() {
         ReceiveBuilder<RoutePlanningDtoCmd> routePlanningDtoCmdReceiveBuilder = newReceiveBuilder();
 
-        routePlanningDtoCmdReceiveBuilder.onMessage(FileManagerToRoutePlanningCmd.class, this::extractDrone);
+        routePlanningDtoCmdReceiveBuilder.onMessage(FileManagerToRoutePlanningCmd.class, this::listenParentCall);
         routePlanningDtoCmdReceiveBuilder.onMessage(DroneManagerToRoutePlanningContainerDto.class, this::listenChildCall);
 
         return routePlanningDtoCmdReceiveBuilder.build();
     }
 
     @Override
-    public Behavior<RoutePlanningDtoCmd> extractDrone(FileManagerToRoutePlanningCmd fileManagerToRoutePlanningCmd) {
+    public Behavior<RoutePlanningDtoCmd> listenParentCall(FileManagerToRoutePlanningCmd fileManagerToRoutePlanningCmd) {
 
         this.fatherRoutePlanningDtoCmdActorRef = fileManagerToRoutePlanningCmd.getReplyTo();
 
@@ -116,9 +118,9 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     }
 
     @Override
-    public void generateDroneRoute(List<String> encodedOrders, RoutePlanningIndexes routePlanningIndexes) {
+    public void generateDroneRoute(Set<String> encodedOrders, RoutePlanningIndexes routePlanningIndexes) {
 
-        List<DeliveryEncodedOrder> deliveryEncodedOrders = new ArrayList<>();
+        Set<DeliveryEncodedOrder> deliveryEncodedOrders = new LinkedHashSet<>();
 
         encodedOrders.forEach(encodedOrder -> {
             DeliveryEncodedOrder deliveryEncodedOrder = DeliveryEncodedOrder.builder()
@@ -132,7 +134,7 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
         stepsToGenerateDroneRoute(deliveryEncodedOrders, routePlanningIndexes);
     }
 
-    private void stepsToGenerateDroneRoute(List<DeliveryEncodedOrder> deliveryEncodedOrders, RoutePlanningIndexes routePlanningIndexes) {
+    private void stepsToGenerateDroneRoute(Set<DeliveryEncodedOrder> deliveryEncodedOrders, RoutePlanningIndexes routePlanningIndexes) {
 
         deliveryEncodedOrders.forEach(deliveryEncodedOrder -> {
 
@@ -146,7 +148,7 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
             }
         });
 
-        sendInformationToDroneManager();
+        callChild(this.deliveryOrdersMovements, this.endOfEachOrder);
     }
 
     private char readMovement(String encodedOrder, RoutePlanningIndexes routePlanningIndexes) {
@@ -177,7 +179,7 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     private CartesianDirection findCoordinatesDirection(CircularValueAndCoordinate circularListOfCoordinates) {
         return Arrays.stream(CartesianDirection.values())
                 .filter(cartesianDirection -> cartesianDirection.getValue()
-                        .equals(circularListOfCoordinates.getSame().getName())
+                        .equals(circularListOfCoordinates.getSame().getCartesianDirection())
                 ).findFirst().get();
     }
 
@@ -185,7 +187,7 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
         CircularValueAndCoordinate circularListOfCoordinates = circularListOfCoordinatesP;
 
-        if (this.actualCartesianDirection.getValue().equals(circularListOfCoordinates.getSame().getName())) {
+        if (this.actualCartesianDirection.getValue().equals(circularListOfCoordinates.getSame().getCartesianDirection())) {
             return circularListOfCoordinates;
         }
 
@@ -202,6 +204,8 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
                 this.actualCircularListOfCoordinates.getSame().getCardinalPoint().getYAxe()
         );
 
+        this.actualCartesianDirection = this.actualCircularListOfCoordinates.getSame().getCartesianDirection();
+
         validateCuadrasLength(this.actualCardinalPoint);
     }
 
@@ -216,14 +220,14 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
     private void addMovementToDeliveryOrder(DeliveryOrder deliveryOrder) {
 
-        ValueAndCoordinate valueAndCoordinate = ValueAndCoordinate.builder()
-                .name(this.actualCartesianDirection.name())
+        CardinalPointWithDirection cardinalPointWithDirection = CardinalPointWithDirection.builder()
+                .cartesianDirection(this.actualCartesianDirection)
                 .cardinalPoint(
                         new CardinalPoint(this.actualCardinalPoint.getXAxe(), this.actualCardinalPoint.getYAxe())
                 )
                 .build();
 
-        this.deliveryOrdersMovements.get(deliveryOrder).add(valueAndCoordinate);
+        this.deliveryOrdersMovements.get(deliveryOrder).add(cardinalPointWithDirection);
     }
 
     private void setLastNextMovement(RoutePlanningIndexes routePlanningIndexes, DeliveryOrder deliveryOrder) {
@@ -233,14 +237,14 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     }
 
     private void setLastMovementAsOrderDestination(DeliveryOrder deliveryOrder) {
-        ValueAndCoordinate valueAndCoordinate = ValueAndCoordinate.builder()
-                .name(this.actualCartesianDirection.name())
+        CardinalPointWithDirection cardinalPointWithDirection = CardinalPointWithDirection.builder()
+                .cartesianDirection(this.actualCartesianDirection)
                 .cardinalPoint(
                         new CardinalPoint(this.actualCardinalPoint.getXAxe(), this.actualCardinalPoint.getYAxe())
                 )
                 .build();
 
-        this.endOfEachOrder.put(deliveryOrder, valueAndCoordinate);
+        this.endOfEachOrder.put(deliveryOrder, cardinalPointWithDirection);
     }
 
     private void buildCircularListOfCoordinates() {
@@ -252,8 +256,8 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
         circularValueAndCoordinateX.setBefore(circularValueAndCoordinateY);
         circularValueAndCoordinateX.setSame(
-                ValueAndCoordinate.builder()
-                        .name("x")
+                CardinalPointWithDirection.builder()
+                        .cartesianDirection(CartesianDirection.X)
                         .cardinalPoint(new CardinalPoint(1, 0))
                         .build()
         );
@@ -261,8 +265,8 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
         circularValueAndCoordinateY.setBefore(circularValueAndCoordinateNx);
         circularValueAndCoordinateY.setSame(
-                ValueAndCoordinate.builder()
-                        .name("y")
+                CardinalPointWithDirection.builder()
+                        .cartesianDirection(CartesianDirection.Y)
                         .cardinalPoint(new CardinalPoint(0, 1))
                         .build()
         );
@@ -270,8 +274,8 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
         circularValueAndCoordinateNx.setBefore(circularValueAndCoordinateNy);
         circularValueAndCoordinateNx.setSame(
-                ValueAndCoordinate.builder()
-                        .name("-x")
+                CardinalPointWithDirection.builder()
+                        .cartesianDirection(CartesianDirection.NX)
                         .cardinalPoint(new CardinalPoint(-1, 0))
                         .build()
         );
@@ -279,8 +283,9 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
         circularValueAndCoordinateNy.setBefore(circularValueAndCoordinateX);
         circularValueAndCoordinateNy.setSame(
-                ValueAndCoordinate.builder()
-                        .name("-y").cardinalPoint(new CardinalPoint(0, -1))
+                CardinalPointWithDirection.builder()
+                        .cartesianDirection(CartesianDirection.NY)
+                        .cardinalPoint(new CardinalPoint(0, -1))
                         .build()
         );
         circularValueAndCoordinateNy.setNext(circularValueAndCoordinateNx);
@@ -296,47 +301,47 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     }
 
     @Override
-    public void sendInformationToDroneManager() {
-        byte routeId = 1;
+    public void callChild(Map<DeliveryOrder, Set<CardinalPointWithDirection>> cardinalPointsOfEachDelivery,
+                          Map<DeliveryOrder, CardinalPointWithDirection> deliveryPoints) {
+
+        int routeId = 1;
         DroneCmd droneCmd = DroneCmd.builder().droneId(this.droneId).build();
 
-        Set<DeliveryOrderCmd> linearListDeliveryOrdersCmds = buildLinearListDeliveryOrdersCmds(this.);
+        Set<CardinalPointWithDirectionCmd> cardinalPointsCmds = new LinkedHashSet<>();
+        cardinalPointsOfEachDelivery.forEach((deliveryOrder, cardinalPointWithDirections) -> {
+            cardinalPointsCmds.addAll(CardinalPointWithDirectionCmd.toCmds(cardinalPointWithDirections));
+        });
 
-        RoutesPlanningToDroneManagerCmd.DeliveryDetailsCmd deliveryDetail = RoutesPlanningToDroneManagerCmd.DeliveryDetailsCmd.builder()
+        Set<DeliveryOrderCmd> deliveryOrdersCmds = new LinkedHashSet<>();
+        deliveryPoints.forEach((deliveryOrder, cardinalPointWithDirection) -> {
+            deliveryOrdersCmds.add(DeliveryOrderCmd.builder()
+                    .id(deliveryOrder.getId())
+                    .cardinalPointWithDirectionCmd(CardinalPointWithDirectionCmd.toCmd(cardinalPointWithDirection))
+                    .build()
+            );
+        });
 
+        RouteCmd routeCmd = RouteCmd.builder()
+                .routeId(routeId)
+                .drone(droneCmd)
+                .cardinalPointCmds(cardinalPointsCmds)
+                .deliveryOrdersCmds(deliveryOrdersCmds)
                 .build();
 
-        RoutesPlanningToDroneManagerCmd message = RoutesPlanningToDroneManagerCmd.builder()
-                .droneCmd(droneCmd)
-                .routeId(routeId)
-                .deliveryDetailsCmd(deliveryDetail)
-                .routesCoordinatesCmd(ValueAndCoordinateCmd.toCmds(this.deliveryOrdersMovements)) //Set
+        RoutesPlanningToDroneManagerCmd routesPlanningToDroneManagerCmd = RoutesPlanningToDroneManagerCmd.builder()
+                .routeCmd(routeCmd)
                 .replyTo(this.getContext().getSelf())
                 .build();
 
-        childDroneManagerDtoCmdActorRef.tell(message);
-    }
-
-    private DeliveryOrderCmdDDDelete buildLinearListDeliveryOrdersCmds(Integer deliverId) {
-
-        int incrementValue = 1;
-        if (deliverId > deliveryOrdersMovements.size()) {
-            ValueAndCoordinate valueAndCoordinate = deliveryOrdersMovements.get(deliverId);
-
-            return DeliveryOrderCmdDDDelete.builder()
-                    .id(deliverId.byteValue())
-                    .valueAndCoordinateToBeDeliveredCmd(ValueAndCoordinateCmd.toCmd(valueAndCoordinate))
-                    .build();
-        }
-
-        return null;
+        childDroneManagerDtoCmdActorRef.tell(routesPlanningToDroneManagerCmd);
     }
 
     @Override
     public Behavior<RoutePlanningDtoCmd> respondToParentActuator(RoutesPlanningToFileManagerDto routesPlanningToFileManagerDto) {
+
         this.fatherRoutePlanningDtoCmdActorRef.tell(routesPlanningToFileManagerDto);
 
-        return null;
+        return this;
     }
 
     @Override
@@ -355,14 +360,13 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
     private String buildDeliveryOrderStringReport(RoutesDto routesDto) {
         StringBuilder stringBuilder = new StringBuilder();
-        this.endOfEachOrder.forEach(valueAndCoordinate -> {
-            stringBuilder.append(valueAndCoordinate.getCartesianCoordinate().toString()).append(" dirección ")
-                    .append(valueAndCoordinate.getName());
+        this.endOfEachOrder.forEach((deliveryOrder, cardinalPointWithDirection) -> {
+            stringBuilder.append(cardinalPointWithDirection.getCardinalPoint().toString()).append(" dirección ")
+                    .append(cardinalPointWithDirection.getCartesianDirection().toString());
         });
 
         return stringBuilder.toString();
     }
-
     private void respondToParentActuatorErrorMessage(RoutePlanningToFileManagerDtoFailException routePlanningToFileManagerDtoFailException) {
         respondToParentActuator(routePlanningToFileManagerDtoFailException);
     }

@@ -5,6 +5,7 @@ import lombok.Generated;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import s4n.codechallenge.actorsdtos.commands.CardinalPointWithDirectionCmd;
 
 import java.util.Optional;
 
@@ -14,7 +15,7 @@ import java.util.Optional;
 @Builder
 @RequiredArgsConstructor
 public class RouteCoordinates {
-    private final Optional<ValueAndCoordinate> beforeOptional;
-    private final Optional<ValueAndCoordinate> actualOptional;
-    private final Optional<ValueAndCoordinate> nextOptional;
+    private final Optional<CardinalPointWithDirectionCmd> beforeOptional;
+    private final Optional<CardinalPointWithDirectionCmd> actualOptional;
+    private final Optional<CardinalPointWithDirectionCmd> nextOptional;
 }
