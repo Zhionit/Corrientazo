@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import s4n.codechallenge.entities.CardinalPoint;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,20 +35,20 @@ public class CardinalPointCmd {
     public static Set<CardinalPointCmd> toCmds(Set<CardinalPoint> cardinalPoints) {
         return cardinalPoints.stream()
                 .map(CardinalPointCmd::toCmd)
-                .collect(Collectors.toSet());
+                .collect((Collectors.toCollection(LinkedHashSet::new)));
     }
 
     public static CardinalPoint toModel(CardinalPointCmd cardinalPointCmd) {
         return CardinalPoint.builder()
                 .xAxe(cardinalPointCmd.getXAxe())
-                .xAxe(cardinalPointCmd.getYAxe())
+                .yAxe(cardinalPointCmd.getYAxe())
                 .build();
     }
 
     public static Set<CardinalPoint> toModels(Set<CardinalPointCmd> cardinalPointCmds) {
         return cardinalPointCmds.stream()
                 .map(CardinalPointCmd::toModel)
-                .collect(Collectors.toSet());
+                .collect((Collectors.toCollection(LinkedHashSet::new)));
     }
 
     @Override

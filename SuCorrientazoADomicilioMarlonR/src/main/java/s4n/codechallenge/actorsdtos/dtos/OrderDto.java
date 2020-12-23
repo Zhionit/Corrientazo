@@ -4,7 +4,7 @@ import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
-import s4n.codechallenge.enums.CardinalDirection;
+import s4n.codechallenge.enums.CartesianDirection;
 
 @Generated
 @Getter
@@ -13,5 +13,5 @@ import s4n.codechallenge.enums.CardinalDirection;
 public class OrderDto {
     private int orderId;
     private CardinalPointDto finalCardinalPointDto;
-    private CardinalDirection finalCardinalDirectionDto;
+    private CartesianDirection finalCartesianDirection;
 }

@@ -5,8 +5,8 @@ import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
+import s4n.codechallenge.actorsdtos.communication.DroneActuatorToDroneManagerSyncDroneDto.SyncDroneDto;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
-import s4n.codechallenge.actorsdtos.dtos.DroneDto;
 
 @Generated
 @Setter
@@ -14,5 +14,5 @@ import s4n.codechallenge.actorsdtos.dtos.DroneDto;
 @Builder
 @AllArgsConstructor
 public class DroneActuatorToDroneManagerMoveDroneDto implements DroneManagerDtoCmd {
-    private DroneDto droneDto;
+    private SyncDroneDto moveDroneDto;
 }

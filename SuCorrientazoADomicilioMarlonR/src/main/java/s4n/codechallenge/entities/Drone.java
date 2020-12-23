@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
-import s4n.codechallenge.enums.CardinalDirection;
+import s4n.codechallenge.enums.CartesianDirection;
 import s4n.codechallenge.enums.DroneStatus;
 
 @Generated
@@ -17,11 +17,11 @@ public class Drone {
     private int id;
     private DroneStatus status;
     private CardinalPoint position;
-    private CardinalDirection direction;
+    private CartesianDirection direction;
 
     public Drone() {
         this.status = DroneStatus.AVAILABLE;
         this.position = new CardinalPoint();
-        this.direction = CardinalDirection.NORTE;
+        this.direction = CartesianDirection.Y;
     }
 }

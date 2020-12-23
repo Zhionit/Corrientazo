@@ -10,7 +10,7 @@ import s4n.codechallenge.actorsdtos.communication.DroneManagerToDroneActuatorSyn
 
 public interface DroneActuator {
 
-    Behavior<DroneManagerDtoCmd> syncRespondToParentActuator(DroneActuatorToDroneManagerSyncDroneDto droneActuatorToDroneManagerSyncDroneDto);
+    void syncRespondToParentActuator(DroneActuatorToDroneManagerSyncDroneDto droneActuatorToDroneManagerSyncDroneDto);
 
     Behavior<DroneManagerDtoCmd> moveRespondToParentActuator(DroneActuatorToDroneManagerMoveDroneDto droneActuatorToDroneManagerMoveDroneDto);
 

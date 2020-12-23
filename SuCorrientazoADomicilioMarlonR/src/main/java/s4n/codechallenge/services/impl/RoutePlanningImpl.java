@@ -15,7 +15,6 @@ import lombok.Setter;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.FilesManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.RoutePlanningDtoCmd;
-import s4n.codechallenge.actorsdtos.commands.CardinalPointCmd;
 import s4n.codechallenge.actorsdtos.commands.DeliveryOrderCmd;
 import s4n.codechallenge.actorsdtos.commands.DroneCmd;
 import s4n.codechallenge.actorsdtos.commands.RouteCmd;
@@ -32,6 +31,8 @@ import s4n.codechallenge.entities.DeliveryOrder;
 import s4n.codechallenge.entities.RoutePlanningIndexes;
 import s4n.codechallenge.actorsdtos.commands.CardinalPointWithDirectionCmd;
 import s4n.codechallenge.enums.CartesianDirection;
+import s4n.codechallenge.enums.CartesianMapperToCardinal;
+import s4n.codechallenge.enums.DeliveryOrderStatus;
 import s4n.codechallenge.services.RoutePlanning;
 
 import java.util.Arrays;
@@ -50,6 +51,7 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     private byte droneId;
     private CardinalPoint actualCardinalPoint;
     private CartesianDirection actualCartesianDirection;
+    private RoutesDto routesDto;
 
     private CircularValueAndCoordinate actualCircularListOfCoordinates;
     private Map<DeliveryOrder, Set<CardinalPointWithDirection>> deliveryOrdersMovements;
@@ -120,15 +122,24 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     @Override
     public void generateDroneRoute(Set<String> encodedOrders, RoutePlanningIndexes routePlanningIndexes) {
 
+        routePlanningIndexes.incrementOrderIndex();
         Set<DeliveryEncodedOrder> deliveryEncodedOrders = new LinkedHashSet<>();
 
         encodedOrders.forEach(encodedOrder -> {
+
+            DeliveryOrder deliveryOrder = DeliveryOrder.builder()
+                    .id(routePlanningIndexes.getActualOrderIndex())
+                    .deliveryOrderStatus(DeliveryOrderStatus.UNDELIVERED)
+                    .build();
+
             DeliveryEncodedOrder deliveryEncodedOrder = DeliveryEncodedOrder.builder()
-                    .deliveryOrder(DeliveryOrder.builder().build())
+                    .deliveryOrder(deliveryOrder)
                     .encodedOrder(encodedOrder)
                     .build();
 
             deliveryEncodedOrders.add(deliveryEncodedOrder);
+
+            this.deliveryOrdersMovements.put(deliveryOrder, new LinkedHashSet<>());
         });
 
         stepsToGenerateDroneRoute(deliveryEncodedOrders, routePlanningIndexes);
@@ -136,15 +147,18 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
     private void stepsToGenerateDroneRoute(Set<DeliveryEncodedOrder> deliveryEncodedOrders, RoutePlanningIndexes routePlanningIndexes) {
 
+        routePlanningIndexes.resetCharMovementIndex();
         deliveryEncodedOrders.forEach(deliveryEncodedOrder -> {
+            for (int i = 0; i < deliveryEncodedOrder.getEncodedOrder().length(); i++) {
 
-            char movementChar = readMovement(deliveryEncodedOrder.getEncodedOrder(), routePlanningIndexes);
-            interpretMovement(movementChar);
-            applyMovement();
-            addMovementToDeliveryOrder(deliveryEncodedOrder.getDeliveryOrder());
+                char movementChar = readMovement(deliveryEncodedOrder.getEncodedOrder(), routePlanningIndexes);
+                interpretMovement(movementChar);
+                applyMovement();
+                addMovementToDeliveryOrder(deliveryEncodedOrder.getDeliveryOrder());
 
-            if (deliveryEncodedOrder.encodedOrder.length() == routePlanningIndexes.getActualMovementCharIndex()) {
-                setLastNextMovement(routePlanningIndexes, deliveryEncodedOrder.getDeliveryOrder());
+                if (deliveryEncodedOrder.encodedOrder.length() == routePlanningIndexes.getActualMovementCharIndex()) {
+                    setLastNextMovement(routePlanningIndexes, deliveryEncodedOrder.getDeliveryOrder());
+                }
             }
         });
 
@@ -179,22 +193,18 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     private CartesianDirection findCoordinatesDirection(CircularValueAndCoordinate circularListOfCoordinates) {
         return Arrays.stream(CartesianDirection.values())
                 .filter(cartesianDirection -> cartesianDirection.getValue()
-                        .equals(circularListOfCoordinates.getSame().getCartesianDirection())
+                        .equals(circularListOfCoordinates.getSame().getCartesianDirection().getValue())
                 ).findFirst().get();
     }
 
-    private CircularValueAndCoordinate findActualCoordinate(CircularValueAndCoordinate circularListOfCoordinatesP) {
+    private CircularValueAndCoordinate findActualCoordinate(CircularValueAndCoordinate circularListOfCoordinates) {
 
-        CircularValueAndCoordinate circularListOfCoordinates = circularListOfCoordinatesP;
-
-        if (this.actualCartesianDirection.getValue().equals(circularListOfCoordinates.getSame().getCartesianDirection())) {
+        if (this.actualCartesianDirection.getValue().equals(circularListOfCoordinates.getSame().getCartesianDirection().getValue())) {
             return circularListOfCoordinates;
         }
 
         circularListOfCoordinates = circularListOfCoordinates.getNext();
-        findActualCoordinate(circularListOfCoordinates);
-
-        return null;
+        return findActualCoordinate(circularListOfCoordinates);
     }
 
     private void applyMovement() {
@@ -362,7 +372,7 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
         StringBuilder stringBuilder = new StringBuilder();
         this.endOfEachOrder.forEach((deliveryOrder, cardinalPointWithDirection) -> {
             stringBuilder.append(cardinalPointWithDirection.getCardinalPoint().toString()).append(" dirección ")
-                    .append(cardinalPointWithDirection.getCartesianDirection().toString());
+                    .append(CartesianMapperToCardinal.valueOf(cardinalPointWithDirection.getCartesianDirection().name()).toString());
         });
 
         return stringBuilder.toString();
@@ -376,9 +386,8 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     @Setter
     @Builder
     @AllArgsConstructor
-    private class DeliveryEncodedOrder {
+    private static class DeliveryEncodedOrder {
         private DeliveryOrder deliveryOrder;
         private String encodedOrder;
-
     }
 }

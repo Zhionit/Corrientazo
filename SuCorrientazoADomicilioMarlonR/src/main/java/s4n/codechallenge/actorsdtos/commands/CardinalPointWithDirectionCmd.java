@@ -8,6 +8,7 @@ import lombok.Setter;
 import s4n.codechallenge.entities.CardinalPointWithDirection;
 import s4n.codechallenge.enums.CartesianDirection;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,6 +31,19 @@ public class CardinalPointWithDirectionCmd {
     public static Set<CardinalPointWithDirectionCmd> toCmds(Set<CardinalPointWithDirection> cardinalPointWithDirections) {
         return cardinalPointWithDirections.stream()
                 .map(CardinalPointWithDirectionCmd::toCmd)
-                .collect(Collectors.toSet());
+                .collect((Collectors.toCollection(LinkedHashSet::new)));
+    }
+
+    public static CardinalPointWithDirection toModel(CardinalPointWithDirectionCmd cardinalPointWithDirectionCmd) {
+        return CardinalPointWithDirection.builder()
+                .cardinalPoint(CardinalPointCmd.toModel(cardinalPointWithDirectionCmd.cardinalPointCmd))
+                .cartesianDirection(cardinalPointWithDirectionCmd.cartesianDirection)
+                .build();
+    }
+
+    public static Set<CardinalPointWithDirection> toModels(Set<CardinalPointWithDirectionCmd> cardinalPointsWithDirectionsCmds) {
+        return cardinalPointsWithDirectionsCmds.stream()
+                .map(CardinalPointWithDirectionCmd::toModel)
+                .collect((Collectors.toCollection(LinkedHashSet::new)));
     }
 }

@@ -10,10 +10,15 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class RoutePlanningIndexes {
+    int actualOrderIndex;
     int actualMovementCharIndex;
 
     public void incrementCharMovementIndex() {
         this.actualMovementCharIndex++;
+    }
+
+    public void incrementOrderIndex() {
+        this.actualOrderIndex++;
     }
 
     public void resetCharMovementIndex() {

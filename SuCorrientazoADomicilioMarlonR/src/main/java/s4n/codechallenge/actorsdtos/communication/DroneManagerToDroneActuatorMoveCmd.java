@@ -9,6 +9,7 @@ import lombok.Setter;
 import s4n.codechallenge.actorsdtos.DroneActuatorDtoCmd;
 import s4n.codechallenge.actorsdtos.DroneManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.commands.CardinalPointWithDirectionCmd;
+import s4n.codechallenge.actorsdtos.commands.DeliveryOrderCmd;
 import s4n.codechallenge.actorsdtos.commands.DroneCmd;
 
 @Generated
@@ -25,7 +26,8 @@ public class DroneManagerToDroneActuatorMoveCmd implements DroneActuatorDtoCmd {
     @Setter
     @Builder
     @AllArgsConstructor
-    public class MoveDroneCmd {
+    public static class MoveDroneCmd {
+        private DeliveryOrderCmd orderCmd;
         private DroneCmd droneCmd;
         private CardinalPointWithDirectionCmd cardinalPointWithDirectionCmd;
         private Boolean shouldDeliverOrder;
