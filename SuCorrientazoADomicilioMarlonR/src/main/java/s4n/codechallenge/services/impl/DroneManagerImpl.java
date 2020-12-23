@@ -44,6 +44,8 @@ import s4n.codechallenge.enums.DroneStatus;
 import s4n.codechallenge.enums.RouteStatus;
 import s4n.codechallenge.services.DroneManager;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -110,7 +112,7 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
                 this.routesPlanningToDroneManagerCmd.getRouteCmd().getCardinalPointCmds());
         buildRouteCoordinates(routesPlanningToDroneManagerCmd.getRouteCmd().getCardinalPointCmds());
 
-        getContext().getLog().info("Sync drone to process routes {}");
+        getContext().getLog().info("Process to order {} has been started", routesPlanningToDroneManagerCmd.getRouteCmd().getRouteId());
 
         syncCallChild(this.drone);
 
@@ -188,8 +190,13 @@ public class DroneManagerImpl extends AbstractBehavior<DroneManagerDtoCmd> imple
     @Override
     public Behavior<DroneManagerDtoCmd> moveListenChildCall(DroneActuatorToDroneManagerMoveDroneDto droneActuatorToDroneManagerMoveDroneDto) {
 
+        updateDeliverOrder(droneActuatorToDroneManagerMoveDroneDto.getMoveDroneDto().getOrderId());
         coordinateDroneMovements(droneActuatorToDroneManagerMoveDroneDto.getMoveDroneDto());
         return this;
+    }
+
+    private void updateDeliverOrder(int orderId) {
+        this.actualDeliveryOrder.setDeliveryOrderStatus(DeliveryOrderStatus.DELIVERED);
     }
 
     private void buildDeliveryOrders(Set<DeliveryOrderCmd> deliveryOrdersCmds) {

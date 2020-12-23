@@ -15,6 +15,7 @@ import s4n.codechallenge.actorsdtos.FilesManagerDtoCmd;
 public class RoutesPlanningToFileManagerDto implements FilesManagerDtoCmd {
     private int droneId;
     private String deliveryOrderReport;
+    private String errorMessage;
 
     public RoutesPlanningToFileManagerDto() {
     }
