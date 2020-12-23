@@ -2,6 +2,7 @@ package s4n.codechallenge.services.impl;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
+import akka.actor.typed.PostStop;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
@@ -35,10 +36,16 @@ import s4n.codechallenge.enums.CartesianMapperToCardinal;
 import s4n.codechallenge.enums.DeliveryOrderStatus;
 import s4n.codechallenge.services.RoutePlanning;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> implements RoutePlanning {
@@ -48,6 +55,12 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
     public static final int MAX_CUADRAS_LENGTH = 10;
 
     public static final int MAX_CUADRAS_LENGTH_NEGATIVE = -10;
+
+    public static final String IN_COME_ROUTE = "input";
+    public static final String OUT_COME_ROUTE = "output";
+    public static final String FILE_ENDING = ".txt";
+    public static final String OUTPUT_FILE_NAME = "out";
+
     private byte droneId;
     private CardinalPoint actualCardinalPoint;
     private CartesianDirection actualCartesianDirection;
@@ -78,8 +91,14 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
         routePlanningDtoCmdReceiveBuilder.onMessage(FileManagerToRoutePlanningCmd.class, this::listenParentCall);
         routePlanningDtoCmdReceiveBuilder.onMessage(DroneManagerToRoutePlanningContainerDto.class, this::listenChildCall);
+        routePlanningDtoCmdReceiveBuilder.onSignal(PostStop.class, postStop -> onPostStop());
 
         return routePlanningDtoCmdReceiveBuilder.build();
+    }
+
+    private Behavior<RoutePlanningDtoCmd> onPostStop() {
+        getContext().getSystem().log().info("Worker {} stopped", getContext().getSelf().toString());
+        return this;
     }
 
     @Override
@@ -187,6 +206,14 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
             case 'A':
                 this.actualCartesianDirection = findCoordinatesDirection(this.actualCircularListOfCoordinates);
                 break;
+            default:
+                String error = "El archivo contiene instrucciones inválidas";
+                RoutePlanningToFileManagerDtoFailException routePlanningToFileManagerDtoFailException =
+                        new RoutePlanningToFileManagerDtoFailException();
+                routePlanningToFileManagerDtoFailException.setErrorMessage(error);
+
+                respondToParentActuatorErrorMessage(routePlanningToFileManagerDtoFailException);
+                break;
         }
     }
 
@@ -214,9 +241,9 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
                 this.actualCircularListOfCoordinates.getSame().getCardinalPoint().getYAxe()
         );
 
-        this.actualCartesianDirection = this.actualCircularListOfCoordinates.getSame().getCartesianDirection();
-
         validateCuadrasLength(this.actualCardinalPoint);
+
+        this.actualCartesianDirection = this.actualCircularListOfCoordinates.getSame().getCartesianDirection();
     }
 
     private void validateCuadrasLength(CardinalPoint actualCardinalPoint) {
@@ -351,9 +378,59 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
 
         this.fatherRoutePlanningDtoCmdActorRef.tell(routesPlanningToFileManagerDto);
 
+        String deliveryOrderReport = routesPlanningToFileManagerDto.getDeliveryOrderReport();
+
+        if (Objects.isNull(deliveryOrderReport)) {
+            deliveryOrderReport = routesPlanningToFileManagerDto.getErrorMessage();
+        }
+
+        String fileContent = buildFileContent(deliveryOrderReport);
+        byte[] dataBytes = fileContent.getBytes();
+
+        Path path = Paths.get(buildOutputNameFile(routesPlanningToFileManagerDto.getDroneId()));
+
+        writeFiles(path, dataBytes);
+
+        onPostStop();
         return this;
     }
 
+    private void writeFiles(Path path, byte[] dataBytes) {
+        try {
+            Files.write(path, dataBytes);
+        } catch (IOException e) {
+            getContext().getLog().error("Error writing file");
+        }
+    }
+
+    private String buildOutputNameFile(int droneId) {
+        return buildDirectoryRoute(OUT_COME_ROUTE + File.separator + OUTPUT_FILE_NAME + droneId + FILE_ENDING);
+    }
+
+    private String buildDirectoryRoute(String inComeRoute) {
+        return new StringBuilder()
+                .append(".")
+                .append(File.separator)
+                .append("src")
+                .append(File.separator)
+                .append("main")
+                .append(File.separator)
+                .append("resources")
+                .append(File.separator)
+                .append(inComeRoute)
+                .append(File.separator)
+                .toString();
+    }
+
+    private String buildFileContent(String deliveryOrderReport) {
+
+        String headerString = "== Reporte de entregas ==";
+        StringBuilder stringBuilder = new StringBuilder(headerString);
+        stringBuilder.append(System.lineSeparator());
+        stringBuilder.append(deliveryOrderReport);
+
+        return stringBuilder.toString();
+    }
     @Override
     public Behavior<RoutePlanningDtoCmd> listenChildCall(DroneManagerToRoutePlanningContainerDto droneManagerToRoutePlanningContainerDto) {
 
@@ -363,9 +440,20 @@ public class RoutePlanningImpl extends AbstractBehavior<RoutePlanningDtoCmd> imp
             routesPlanningToFileManagerDtoCmd.setDeliveryOrderReport(buildDeliveryOrderStringReport(droneManagerToRoutePlanningDto.getRoutesDto()));
         });
 
+        //all of this has been done, because some times the Actuator parent dies and can perform the call
         respondToParentActuator(routesPlanningToFileManagerDtoCmd);
 
         return this;
+    }
+
+    private void cleanCache() {
+
+        this.deliveryOrdersMovements = new HashMap<>();
+        this.endOfEachOrder = new HashMap<>();
+        this.droneId = 0;
+        this.actualCardinalPoint = new CardinalPoint();
+        this.actualCircularListOfCoordinates = CircularValueAndCoordinate.builder().build();
+        this.routesDto = RoutesDto.builder().build();
     }
 
     private String buildDeliveryOrderStringReport(RoutesDto routesDto) {

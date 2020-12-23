@@ -1,6 +1,7 @@
 package s4n.codechallenge.actorsdtos.communication;
 
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.javadsl.ActorContext;
 import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
@@ -18,4 +19,5 @@ public class FileManagerToRoutePlanningCmd implements RoutePlanningDtoCmd {
     private Set<String> encodedOrders;
     private String fileName;
     private ActorRef<FilesManagerDtoCmd> replyTo;
+    private ActorContext<FilesManagerDtoCmd> parentContext;
 }
