@@ -4,10 +4,12 @@ import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
+import s4n.codechallenge.entities.CardinalPoint;
 import s4n.codechallenge.entities.DeliveryOrder;
+import s4n.codechallenge.enums.DeliveryOrderStatus;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Generated
@@ -15,21 +17,38 @@ import java.util.stream.Collectors;
 @Setter
 @Builder
 public class DeliveryOrderCmd {
-    private byte id;
-    private CartesianCoordinateCmd cartesianCoordinateOfDestinationCmd;
-    private DeliveryOrderCmd nextDeliveryOrderCmd;
+
+    private final int id;
+    private final CardinalPointWithDirectionCmd cardinalPointWithDirectionCmd;
 
     public static DeliveryOrder toModel(DeliveryOrderCmd deliveryOrderCmd) {
+        CardinalPoint cardinalPointOfDestination = CardinalPoint.builder()
+                .xAxe(deliveryOrderCmd.cardinalPointWithDirectionCmd.getCardinalPointCmd().getXAxe())
+                .yAxe(deliveryOrderCmd.cardinalPointWithDirectionCmd.getCardinalPointCmd().getYAxe())
+                .build();
+
         return DeliveryOrder.builder()
                 .id(deliveryOrderCmd.getId())
-                .cartesianCoordinateOfDestination(CartesianCoordinateCmd.toModel(deliveryOrderCmd.cartesianCoordinateOfDestinationCmd))
-                .nextDeliveryOrder(Objects.isNull(deliveryOrderCmd.getNextDeliveryOrderCmd()) ? null : DeliveryOrderCmd.toModel(deliveryOrderCmd.getNextDeliveryOrderCmd()))
+                .cardinalPoint(cardinalPointOfDestination)
+                .deliveryOrderStatus(DeliveryOrderStatus.UNDELIVERED)
                 .build();
     }
 
-    public static List<DeliveryOrder> toModels(List<DeliveryOrderCmd> deliveryOrderCmds) {
-        return deliveryOrderCmds.stream()
+    public static Set<DeliveryOrder> toModels(Set<DeliveryOrderCmd> deliveryOrderCmd) {
+        return deliveryOrderCmd.stream()
                 .map(DeliveryOrderCmd::toModel)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    public static DeliveryOrderCmd toCmd(DeliveryOrder actualDeliveryOrder) {
+
+        CardinalPointWithDirectionCmd cardinalPointWithDirectionCmd = CardinalPointWithDirectionCmd.builder()
+                .cardinalPointCmd(CardinalPointCmd.toCmd(actualDeliveryOrder.getCardinalPoint()))
+                .build();
+
+        return DeliveryOrderCmd.builder()
+                .id(actualDeliveryOrder.getId())
+                .cardinalPointWithDirectionCmd(cardinalPointWithDirectionCmd)
+                .build();
     }
 }

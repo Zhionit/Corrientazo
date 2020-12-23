@@ -1,9 +1,10 @@
 package s4n.codechallenge.entities;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Optional;
@@ -12,9 +13,9 @@ import java.util.Optional;
 @Getter
 @Setter
 @Builder
-@RequiredArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class RouteCoordinates {
-    private final Optional<CartesianCoordinate> beforeOptional;
-    private final Optional<CartesianCoordinate> actualOptional;
-    private final Optional<CartesianCoordinate> nextOptional;
+    private CardinalPointWithDirection cardinalPointWithDirection;
+    private Optional<RouteCoordinates> nextOptional;
 }

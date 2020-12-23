@@ -11,11 +11,17 @@ import s4n.codechallenge.entities.Drone;
 @Setter
 @Builder
 public class DroneCmd {
-    private byte droneId;
+    private int droneId;
 
     public static Drone toModel(DroneCmd droneCmd) {
         return Drone.builder()
                 .id(droneCmd.getDroneId())
+                .build();
+    }
+
+    public static DroneCmd toCmd(Drone drone) {
+        return DroneCmd.builder()
+                .droneId(drone.getId())
                 .build();
     }
 }

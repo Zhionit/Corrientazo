@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import s4n.codechallenge.enums.RouteStatus;
 
-import java.util.List;
+import java.util.Set;
 
 @Generated
 @Getter
@@ -17,9 +17,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class Route {
-    private final byte routeId;
-    private final Drone drone;
-    private final List<DeliveryOrder> deliveryOrders;
-    private final List<RouteCoordinates> routeCoordinates;
+    private int routeId;
+    private Drone drone;
+    private Set<DeliveryOrder> deliveryOrders;
+    private Set<CardinalPoint> cardinalPoints;
     private RouteStatus routeStatus;
 }

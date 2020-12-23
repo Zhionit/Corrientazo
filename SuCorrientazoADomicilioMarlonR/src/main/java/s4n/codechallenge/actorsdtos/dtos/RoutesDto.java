@@ -10,6 +10,6 @@ import lombok.Setter;
 @Setter
 @Builder
 public class RoutesDto {
-    private byte id;
+    private int id;
     private OrderDto orderDto;
 }

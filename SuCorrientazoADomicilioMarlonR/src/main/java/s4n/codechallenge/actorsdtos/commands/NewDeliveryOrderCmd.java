@@ -1,6 +1,5 @@
 package s4n.codechallenge.actorsdtos.commands;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Generated;
 import lombok.Getter;
@@ -17,14 +16,14 @@ import java.util.stream.Collectors;
 @Builder
 public class NewDeliveryOrderCmd {
 
-    private byte id;
+    private int id;
     private CartesianCoordinateCmd cartesianCoordinateOfDestinationCmd;
 
     public static Optional<NewDeliveryOrderCmd> toCmd(Optional<DeliveryOrder> deliveryOrderOptional) {
         if (deliveryOrderOptional.isPresent()) {
             return Optional.of(NewDeliveryOrderCmd.builder()
                 .id(deliveryOrderOptional.get().getId())
-                .cartesianCoordinateOfDestinationCmd(CartesianCoordinateCmd.toCmd(deliveryOrderOptional.get().getCartesianCoordinateOfDestination()))
+                .cartesianCoordinateOfDestinationCmd(CartesianCoordinateCmd.toCmd(deliveryOrderOptional.get().getCardinalPoint()))
                 .build());
         }
         return Optional.empty();
