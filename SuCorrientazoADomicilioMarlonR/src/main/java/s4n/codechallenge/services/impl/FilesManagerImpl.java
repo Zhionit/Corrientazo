@@ -32,6 +32,7 @@ public class FilesManagerImpl extends AbstractBehavior<FilesManagerDtoCmd> imple
     public static final String IN_COME_ROUTE = "input";
     public static final String OUT_COME_ROUTE = "output";
     public static final String FILE_ENDING = ".txt";
+    public static final String OUTPUT_FILE_NAME = "out";
 
     private final ActorRef<RoutePlanningDtoCmd> childRoutePlanningDtoCmdActorRef;
 
@@ -127,11 +128,6 @@ public class FilesManagerImpl extends AbstractBehavior<FilesManagerDtoCmd> imple
     }
 
     @Override
-    public void writeFiles() {
-        //TODO Write file
-    }
-
-    @Override
     public void callChildActuator(String data, String fileName) {
 
         FileManagerToRoutePlanningCmd parameter = FileManagerToRoutePlanningCmd.builder()
@@ -145,10 +141,37 @@ public class FilesManagerImpl extends AbstractBehavior<FilesManagerDtoCmd> imple
 
     @Override
     public Behavior<FilesManagerDtoCmd> listenChildCall(RoutesPlanningToFileManagerDto routesPlanningToFileManagerDto) {
-        //TODO Fix,this is only for testing
 
+        String fileContent = buildFileContent(routesPlanningToFileManagerDto.getDeliveryOrderReport());
+        byte[] dataBytes = fileContent.getBytes();
 
-        return null;
+        Path path = Paths.get(buildOutputNameFile(routesPlanningToFileManagerDto.getDroneId()));
+        writeFiles(path, dataBytes);
+
+        return this;
+    }
+
+    private String buildFileContent(String deliveryOrderReport) {
+
+        String headerString = "== Reporte de entregas ==";
+        StringBuilder stringBuilder = new StringBuilder(headerString);
+        stringBuilder.append(System.lineSeparator());
+        stringBuilder.append(deliveryOrderReport);
+
+        return stringBuilder.toString();
+    }
+
+    private String buildOutputNameFile(int droneId) {
+        return buildDirectoryRoute(OUT_COME_ROUTE + OUTPUT_FILE_NAME + droneId + FILE_ENDING);
+    }
+
+    @Override
+    public void writeFiles(Path path, byte[] dataBytes) {
+        try {
+            Files.write(path, dataBytes);
+        } catch (IOException e) {
+            getContext().getLog().error("Error writing file");
+        }
     }
 
     @Override

@@ -5,11 +5,13 @@ import s4n.codechallenge.actorsdtos.FilesManagerDtoCmd;
 import s4n.codechallenge.actorsdtos.communication.MainToFileManagerCmd;
 import s4n.codechallenge.actorsdtos.communication.RoutesPlanningToFileManagerDto;
 
+import java.nio.file.Path;
+
 public interface FilesManager {
 
     void readFiles(String fileName);
 
-    void writeFiles();
+    void writeFiles(Path path, byte[] dataBytes);
 
     void callChildActuator(String data, String fileName);
 
